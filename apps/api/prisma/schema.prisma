@@ -42,11 +42,13 @@ model Cancha {
   id            String     @id @default(uuid())
   nombre        String
   tipo          TipoCancha
-  precioPorHora Decimal    @db.Decimal(10, 2)
+  precioPorHora Decimal    @map("precio_por_hora") @db.Decimal(10, 2)
   activa        Boolean    @default(true)
 
   reservas    Reserva[]
   turnosFijos TurnoFijo[]
+
+  @@map("cancha")
 }
 
 // Una fila por día de semana. horaApertura y horaCierre en minutos desde
@@ -54,10 +56,12 @@ model Cancha {
 // pasada la medianoche (ej: 1560 = 02:00 AM del día siguiente).
 model ConfiguracionHoraria {
   id               String    @id @default(uuid())
-  diaSemana        DiaSemana @unique
-  horaApertura     Int
-  horaCierre       Int
-  intervaloMinutos Int       @default(30)
+  diaSemana        DiaSemana @unique @map("dia_semana")
+  horaApertura     Int       @map("hora_apertura")
+  horaCierre       Int       @map("hora_cierre")
+  intervaloMinutos Int       @default(30) @map("intervalo_minutos")
+
+  @@map("configuracion_horaria")
 }
 
 model Usuario {
@@ -66,51 +70,70 @@ model Usuario {
   apellido       String
   email          String?    @unique
   contrasena     String?
-  numeroWhatsApp String
+  numeroWhatsApp String     @map("numero_whatsapp")
   rol            RolUsuario @default(CLIENTE)
-  fotoPerfil     String?
-  creadoPorAdmin Boolean    @default(false)
+  fotoPerfil     String?    @map("foto_perfil")
+  creadoPorAdmin Boolean    @default(false) @map("creado_por_admin")
   activo         Boolean    @default(true)
-  creadoEn       DateTime   @default(now())
+  creadoEn       DateTime   @default(now()) @map("creado_en")
 
   reservas    Reserva[]
   turnosFijos TurnoFijo[]
+
+  @@map("usuario")
 }
 
 model Reserva {
   id               String        @id @default(uuid())
-  canchaId         String
+  canchaId         String        @map("cancha_id")
   cancha           Cancha        @relation(fields: [canchaId], references: [id])
-  usuarioId        String?
+  usuarioId        String?       @map("usuario_id")
   usuario          Usuario?      @relation(fields: [usuarioId], references: [id])
-  nombreContacto   String?
-  telefonoContacto String?
-  fechaReserva     DateTime      @db.Date
-  horaInicio       Int
-  horaFin          Int
+  nombreContacto   String?       @map("nombre_contacto")
+  telefonoContacto String?       @map("telefono_contacto")
+  fechaReserva     DateTime      @map("fecha_reserva") @db.Date
+  horaInicio       Int           @map("hora_inicio")
+  horaFin          Int           @map("hora_fin")
   estado           EstadoReserva @default(PENDIENTE)
-  esManual         Boolean       @default(false)
-  mensajeOpcional  String?
-  requiereSeña     Boolean       @default(false)
-  montoSeña        Decimal?      @db.Decimal(10, 2)
-  creadoEn         DateTime      @default(now())
-  actualizadoEn    DateTime      @updatedAt
+  esManual         Boolean       @default(false) @map("es_manual")
+  mensajeOpcional  String?       @map("mensaje_opcional")
+  requiereSena     Boolean       @default(false) @map("requiere_sena")
+  montoSena        Decimal?      @map("monto_sena") @db.Decimal(10, 2)
+  creadoEn         DateTime      @default(now()) @map("creado_en")
+  actualizadoEn    DateTime      @updatedAt @map("actualizado_en")
 
   @@index([canchaId, fechaReserva, estado])
+  @@map("reserva")
 }
 
 model TurnoFijo {
   id          String    @id @default(uuid())
-  canchaId    String
+  canchaId    String    @map("cancha_id")
   cancha      Cancha    @relation(fields: [canchaId], references: [id])
-  usuarioId   String
+  usuarioId   String    @map("usuario_id")
   usuario     Usuario   @relation(fields: [usuarioId], references: [id])
-  diaSemana   DiaSemana
-  horaInicio  Int
-  horaFin     Int
+  diaSemana   DiaSemana @map("dia_semana")
+  horaInicio  Int       @map("hora_inicio")
+  horaFin     Int       @map("hora_fin")
   activo      Boolean   @default(true)
-  fechaInicio DateTime  @db.Date
-  creadoEn    DateTime  @default(now())
+  fechaInicio DateTime  @map("fecha_inicio") @db.Date
+  creadoEn    DateTime  @default(now()) @map("creado_en")
+
+  excepciones TurnoFijoExcepcion[]
 
   @@index([canchaId, diaSemana])
+  @@map("turno_fijo")
+}
+
+// Registra fechas puntuales en las que un turno fijo no se presenta.
+// El turno sigue activo para todas las demás semanas.
+model TurnoFijoExcepcion {
+  id            String    @id @default(uuid())
+  turnoFijoId   String    @map("turno_fijo_id")
+  turnoFijo     TurnoFijo @relation(fields: [turnoFijoId], references: [id])
+  fechaExcluida DateTime  @map("fecha_excluida") @db.Date
+  creadoEn      DateTime  @default(now()) @map("creado_en")
+
+  @@unique([turnoFijoId, fechaExcluida])
+  @@map("turno_fijo_excepcion")
 }

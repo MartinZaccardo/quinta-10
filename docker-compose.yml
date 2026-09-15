@@ -1,0 +1,21 @@
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: quintadel10_db
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: quinta10
+      POSTGRES_PASSWORD: quintadel10
+      POSTGRES_DB: quinta-10
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U quinta10 -d quinta-10"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+volumes:
+  postgres_data:
