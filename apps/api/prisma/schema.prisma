@@ -1,0 +1,116 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+// ─── Enumeraciones ───────────────────────────────────────────────────────────
+
+enum TipoCancha {
+  F5
+  F6
+  PADEL
+}
+
+enum RolUsuario {
+  CLIENTE
+  ADMINISTRADOR
+}
+
+enum EstadoReserva {
+  PENDIENTE
+  CONFIRMADA
+  CANCELADA
+}
+
+enum DiaSemana {
+  LUNES
+  MARTES
+  MIERCOLES
+  JUEVES
+  VIERNES
+  SABADO
+  DOMINGO
+}
+
+// ─── Modelos ─────────────────────────────────────────────────────────────────
+
+model Cancha {
+  id            String     @id @default(uuid())
+  nombre        String
+  tipo          TipoCancha
+  precioPorHora Decimal    @db.Decimal(10, 2)
+  activa        Boolean    @default(true)
+
+  reservas    Reserva[]
+  turnosFijos TurnoFijo[]
+}
+
+// Una fila por día de semana. horaApertura y horaCierre en minutos desde
+// medianoche. horaCierre puede superar 1440 para indicar que cierra
+// pasada la medianoche (ej: 1560 = 02:00 AM del día siguiente).
+model ConfiguracionHoraria {
+  id               String    @id @default(uuid())
+  diaSemana        DiaSemana @unique
+  horaApertura     Int
+  horaCierre       Int
+  intervaloMinutos Int       @default(30)
+}
+
+model Usuario {
+  id             String     @id @default(uuid())
+  nombre         String
+  apellido       String
+  email          String?    @unique
+  contrasena     String?
+  numeroWhatsApp String
+  rol            RolUsuario @default(CLIENTE)
+  fotoPerfil     String?
+  creadoPorAdmin Boolean    @default(false)
+  activo         Boolean    @default(true)
+  creadoEn       DateTime   @default(now())
+
+  reservas    Reserva[]
+  turnosFijos TurnoFijo[]
+}
+
+model Reserva {
+  id               String        @id @default(uuid())
+  canchaId         String
+  cancha           Cancha        @relation(fields: [canchaId], references: [id])
+  usuarioId        String?
+  usuario          Usuario?      @relation(fields: [usuarioId], references: [id])
+  nombreContacto   String?
+  telefonoContacto String?
+  fechaReserva     DateTime      @db.Date
+  horaInicio       Int
+  horaFin          Int
+  estado           EstadoReserva @default(PENDIENTE)
+  esManual         Boolean       @default(false)
+  mensajeOpcional  String?
+  requiereSeña     Boolean       @default(false)
+  montoSeña        Decimal?      @db.Decimal(10, 2)
+  creadoEn         DateTime      @default(now())
+  actualizadoEn    DateTime      @updatedAt
+
+  @@index([canchaId, fechaReserva, estado])
+}
+
+model TurnoFijo {
+  id          String    @id @default(uuid())
+  canchaId    String
+  cancha      Cancha    @relation(fields: [canchaId], references: [id])
+  usuarioId   String
+  usuario     Usuario   @relation(fields: [usuarioId], references: [id])
+  diaSemana   DiaSemana
+  horaInicio  Int
+  horaFin     Int
+  activo      Boolean   @default(true)
+  fechaInicio DateTime  @db.Date
+  creadoEn    DateTime  @default(now())
+
+  @@index([canchaId, diaSemana])
+}
