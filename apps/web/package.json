@@ -1,0 +1,10 @@
+{
+  "name": "@quinta/web",
+  "version": "0.0.1",
+  "private": true,
+  "scripts": {
+    "dev": "echo 'Next.js pendiente de configurar'",
+    "build": "echo 'Next.js pendiente de configurar'",
+    "lint": "echo 'ok'"
+  }
+}

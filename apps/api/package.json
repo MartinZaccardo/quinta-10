@@ -1,0 +1,10 @@
+{
+  "name": "@quinta/api",
+  "version": "0.0.1",
+  "private": true,
+  "scripts": {
+    "dev": "echo 'NestJS pendiente de configurar'",
+    "build": "echo 'NestJS pendiente de configurar'",
+    "lint": "echo 'ok'"
+  }
+}

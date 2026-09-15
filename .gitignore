@@ -1,0 +1,13 @@
+node_modules
+dist
+.next
+.turbo
+*.tsbuildinfo
+
+# Entorno
+.env
+.env.local
+.env*.local
+
+# Logs
+npm-debug.log*
