@@ -8,11 +8,17 @@
     "lint": "echo 'ok'"
   },
   "dependencies": {
+    "@prisma/adapter-pg": "^7.10.0",
     "@prisma/client": "^7.10.0",
-    "dotenv": "^17.4.2"
+    "bcryptjs": "^2.4.3",
+    "dotenv": "^17.4.2",
+    "pg": "^8.13.3"
   },
   "devDependencies": {
+    "@types/bcryptjs": "^2.4.6",
     "@types/node": "^26.5.1",
-    "prisma": "^7.10.0"
+    "@types/pg": "^8.11.14",
+    "prisma": "^7.10.0",
+    "tsx": "^4.19.2"
   }
 }
