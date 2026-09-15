@@ -1,6 +1,6 @@
 import "dotenv/config";
 import { PrismaPg } from "@prisma/adapter-pg";
-import { PrismaClient, DiaSemana, TipoCancha, RolUsuario } from "../generated/prisma/client";
+import { PrismaClient, DiaSemana, TipoCancha, RolUsuario } from "../src/generated/prisma/client";
 import bcrypt from "bcryptjs";
 
 const prisma = new PrismaClient({

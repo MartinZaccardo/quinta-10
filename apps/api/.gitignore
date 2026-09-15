@@ -1,7 +1,7 @@
 node_modules
 .env
 
-/generated/prisma
+/src/generated/
 
 # Generado por prisma init — skills para editores
 .agents
