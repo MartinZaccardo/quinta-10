@@ -9,5 +9,8 @@ dist
 .env.local
 .env*.local
 
+# Claude Code
+.claude
+
 # Logs
 npm-debug.log*
