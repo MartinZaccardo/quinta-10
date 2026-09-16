@@ -1,21 +1,18 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/contexts/auth';
 
 export default function ClienteLayout({ children }: { children: React.ReactNode }) {
-  const { estaAutenticado } = useAuth();
+  const { estaAutenticado, cargando } = useAuth();
   const router = useRouter();
-  const [montado, setMontado] = useState(false);
-
-  useEffect(() => { setMontado(true); }, []);
 
   useEffect(() => {
-    if (montado && !estaAutenticado) router.replace('/login');
-  }, [montado, estaAutenticado, router]);
+    if (!cargando && !estaAutenticado) router.replace('/login');
+  }, [cargando, estaAutenticado, router]);
 
-  if (!montado || !estaAutenticado) {
+  if (cargando || !estaAutenticado) {
     return <div className="flex items-center justify-center h-screen text-muted-foreground">Cargando...</div>;
   }
 

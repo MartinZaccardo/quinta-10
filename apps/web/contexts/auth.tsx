@@ -2,6 +2,7 @@
 
 import { createContext, useContext, useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
+import api from '@/lib/api';
 
 export type Rol = 'CLIENTE' | 'ADMINISTRADOR';
 
@@ -15,58 +16,40 @@ interface AuthContextType {
   usuario: UsuarioAutenticado | null;
   estaAutenticado: boolean;
   esAdmin: boolean;
-  login: (token: string) => void;
-  logout: () => void;
-}
-
-function decodificarToken(token: string): UsuarioAutenticado {
-  const payload = token.split('.')[1];
-  return JSON.parse(atob(payload)) as UsuarioAutenticado;
-}
-
-function guardarToken(token: string) {
-  localStorage.setItem('token', token);
-  // Cookie sin httpOnly para que el middleware de Next.js pueda leerla
-  document.cookie = `token=${token}; path=/; max-age=604800; SameSite=Lax`;
-}
-
-function eliminarToken() {
-  localStorage.removeItem('token');
-  document.cookie = 'token=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT';
+  cargando: boolean;
+  login: (email: string, contrasena: string) => Promise<void>;
+  logout: () => Promise<void>;
 }
 
 export const AuthContext = createContext<AuthContextType>({
   usuario: null,
   estaAutenticado: false,
   esAdmin: false,
-  login: () => {},
-  logout: () => {},
+  cargando: true,
+  login: async () => {},
+  logout: async () => {},
 });
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [usuario, setUsuario] = useState<UsuarioAutenticado | null>(null);
+  const [cargando, setCargando] = useState(true);
   const router = useRouter();
 
   useEffect(() => {
-    const token = localStorage.getItem('token');
-    if (token) {
-      try {
-        setUsuario(decodificarToken(token));
-      } catch {
-        eliminarToken();
-      }
-    }
+    api.get<UsuarioAutenticado>('/auth/me')
+      .then(setUsuario)
+      .catch(() => setUsuario(null))
+      .finally(() => setCargando(false));
   }, []);
 
-  function login(token: string) {
-    guardarToken(token);
-    const payload = decodificarToken(token);
-    setUsuario(payload);
-    router.push(payload.rol === 'ADMINISTRADOR' ? '/admin/disponibilidad' : '/cliente/disponibilidad');
+  async function login(email: string, contrasena: string) {
+    const usuarioData = await api.post<UsuarioAutenticado>('/auth/login', { email, contrasena });
+    setUsuario(usuarioData);
+    router.push(usuarioData.rol === 'ADMINISTRADOR' ? '/admin/disponibilidad' : '/cliente/disponibilidad');
   }
 
-  function logout() {
-    eliminarToken();
+  async function logout() {
+    await api.post('/auth/logout');
     setUsuario(null);
     router.push('/login');
   }
@@ -76,6 +59,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       usuario,
       estaAutenticado: !!usuario,
       esAdmin: usuario?.rol === 'ADMINISTRADOR',
+      cargando,
       login,
       logout,
     }}>

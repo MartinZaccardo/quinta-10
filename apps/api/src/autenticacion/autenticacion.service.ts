@@ -7,6 +7,11 @@ import { RegistroDto } from './dto/registro.dto';
 import { LoginDto } from './dto/login.dto';
 import { JwtPayload } from './strategies/jwt.strategy';
 
+export interface TokenConPayload {
+  accessToken: string;
+  usuario: JwtPayload;
+}
+
 @Injectable()
 export class AutenticacionService {
   constructor(
@@ -14,7 +19,7 @@ export class AutenticacionService {
     private readonly jwt: JwtService,
   ) {}
 
-  async registro(dto: RegistroDto) {
+  async registro(dto: RegistroDto): Promise<TokenConPayload> {
     const existe = await this.prisma.db.usuario.findUnique({
       where: { email: dto.email },
     });
@@ -38,7 +43,7 @@ export class AutenticacionService {
     return this.firmarToken(usuario.id, usuario.email!, usuario.rol);
   }
 
-  async login(dto: LoginDto) {
+  async login(dto: LoginDto): Promise<TokenConPayload> {
     const usuario = await this.prisma.db.usuario.findUnique({
       where: { email: dto.email },
     });
@@ -56,8 +61,8 @@ export class AutenticacionService {
     return this.firmarToken(usuario.id, usuario.email!, usuario.rol);
   }
 
-  private firmarToken(usuarioId: string, email: string, rol: RolUsuario) {
-    const payload: JwtPayload = { sub: usuarioId, email, rol };
-    return { accessToken: this.jwt.sign(payload) };
+  private firmarToken(usuarioId: string, email: string, rol: RolUsuario): TokenConPayload {
+    const usuario: JwtPayload = { sub: usuarioId, email, rol };
+    return { accessToken: this.jwt.sign(usuario), usuario };
   }
 }

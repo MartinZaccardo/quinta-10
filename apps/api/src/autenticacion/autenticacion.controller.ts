@@ -1,20 +1,55 @@
-import { Controller, Post, Body, HttpCode, HttpStatus } from '@nestjs/common';
+import { Controller, Post, Get, Body, HttpCode, HttpStatus, Res, UseGuards } from '@nestjs/common';
+import { Response, CookieOptions } from 'express';
 import { AutenticacionService } from './autenticacion.service';
 import { RegistroDto } from './dto/registro.dto';
 import { LoginDto } from './dto/login.dto';
+import { JwtGuard } from './guards/jwt.guard';
+import { UsuarioActual } from './decorators/usuario-actual.decorator';
+import { JwtPayload } from './strategies/jwt.strategy';
+
+const OPCIONES_COOKIE: CookieOptions = {
+  httpOnly: true,
+  secure: process.env.NODE_ENV === 'production',
+  sameSite: 'lax',
+  maxAge: 7 * 24 * 60 * 60 * 1000, // 7 días en ms
+  path: '/',
+};
 
 @Controller('auth')
 export class AutenticacionController {
   constructor(private readonly autenticacion: AutenticacionService) {}
 
   @Post('registro')
-  registro(@Body() dto: RegistroDto) {
-    return this.autenticacion.registro(dto);
+  async registro(
+    @Body() dto: RegistroDto,
+    @Res({ passthrough: true }) res: Response,
+  ) {
+    const { accessToken, usuario } = await this.autenticacion.registro(dto);
+    res.cookie('token', accessToken, OPCIONES_COOKIE);
+    return usuario;
   }
 
   @Post('login')
   @HttpCode(HttpStatus.OK)
-  login(@Body() dto: LoginDto) {
-    return this.autenticacion.login(dto);
+  async login(
+    @Body() dto: LoginDto,
+    @Res({ passthrough: true }) res: Response,
+  ) {
+    const { accessToken, usuario } = await this.autenticacion.login(dto);
+    res.cookie('token', accessToken, OPCIONES_COOKIE);
+    return usuario;
+  }
+
+  @Post('logout')
+  @HttpCode(HttpStatus.OK)
+  logout(@Res({ passthrough: true }) res: Response) {
+    res.clearCookie('token', { path: '/' });
+    return { mensaje: 'Sesión cerrada' };
+  }
+
+  @Get('me')
+  @UseGuards(JwtGuard)
+  me(@UsuarioActual() usuario: JwtPayload) {
+    return usuario;
   }
 }
