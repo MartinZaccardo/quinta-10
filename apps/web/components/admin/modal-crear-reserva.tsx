@@ -1,0 +1,142 @@
+'use client';
+
+import { useState } from 'react';
+import api from '@/lib/api';
+import { minutosAHora, formatearRango } from '@/lib/tiempo';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
+
+const DURACIONES = [
+  { minutos: 60,  etiqueta: '1 hora' },
+  { minutos: 90,  etiqueta: '1 hora 30 min' },
+  { minutos: 120, etiqueta: '2 horas' },
+];
+
+interface Props {
+  canchaId: string;
+  nombreCancha: string;
+  fecha: string;
+  horaInicio: number;
+  abierto: boolean;
+  onCerrar: () => void;
+  onCreada: () => void;
+}
+
+export function ModalCrearReserva({
+  canchaId,
+  nombreCancha,
+  fecha,
+  horaInicio,
+  abierto,
+  onCerrar,
+  onCreada,
+}: Props) {
+  const [duracion, setDuracion] = useState(60);
+  const [nombre, setNombre] = useState('');
+  const [telefono, setTelefono] = useState('');
+  const [error, setError] = useState('');
+  const [cargando, setCargando] = useState(false);
+
+  const horaFin = horaInicio + duracion;
+
+  async function manejarSubmit(e: React.FormEvent) {
+    e.preventDefault();
+    setError('');
+    setCargando(true);
+    try {
+      await api.post('/reservas/manual', {
+        canchaId,
+        fecha,
+        horaInicio,
+        horaFin,
+        nombreContacto: nombre,
+        telefonoContacto: telefono,
+      });
+      onCreada();
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Error al crear la reserva');
+    } finally {
+      setCargando(false);
+    }
+  }
+
+  return (
+    <Dialog open={abierto} onOpenChange={(open) => !open && onCerrar()}>
+      <DialogContent className="sm:max-w-md">
+        <DialogHeader>
+          <DialogTitle>Nueva reserva</DialogTitle>
+        </DialogHeader>
+
+        <div className="text-sm text-muted-foreground space-y-0.5 pb-2">
+          <p><span className="font-medium text-foreground">Cancha:</span> {nombreCancha}</p>
+          <p><span className="font-medium text-foreground">Fecha:</span> {fecha}</p>
+          <p>
+            <span className="font-medium text-foreground">Horario:</span>{' '}
+            {formatearRango(horaInicio, horaFin)}
+          </p>
+        </div>
+
+        <form onSubmit={manejarSubmit} className="space-y-4">
+          {error && (
+            <p className="text-sm text-red-600 bg-red-50 border border-red-200 rounded-md px-3 py-2">
+              {error}
+            </p>
+          )}
+
+          <div className="space-y-1">
+            <Label>Duración</Label>
+            <Select
+              value={String(duracion)}
+              onValueChange={(v) => setDuracion(Number(v))}
+            >
+              <SelectTrigger>
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                {DURACIONES.map((d) => (
+                  <SelectItem key={d.minutos} value={String(d.minutos)}>
+                    {d.etiqueta} — hasta {minutosAHora(horaInicio + d.minutos)}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+
+          <div className="space-y-1">
+            <Label htmlFor="nombre">Nombre del cliente</Label>
+            <Input
+              id="nombre"
+              value={nombre}
+              onChange={(e) => setNombre(e.target.value)}
+              placeholder="Juan García"
+              required
+            />
+          </div>
+
+          <div className="space-y-1">
+            <Label htmlFor="telefono">Teléfono / WhatsApp</Label>
+            <Input
+              id="telefono"
+              value={telefono}
+              onChange={(e) => setTelefono(e.target.value)}
+              placeholder="+5491112345678"
+              required
+            />
+          </div>
+
+          <DialogFooter>
+            <Button type="button" variant="outline" onClick={onCerrar} disabled={cargando}>
+              Cancelar
+            </Button>
+            <Button type="submit" disabled={cargando}>
+              {cargando ? 'Reservando...' : 'Confirmar reserva'}
+            </Button>
+          </DialogFooter>
+        </form>
+      </DialogContent>
+    </Dialog>
+  );
+}
