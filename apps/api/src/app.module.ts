@@ -3,8 +3,9 @@ import { PrismaModule } from './prisma/prisma.module';
 import { AutenticacionModule } from './autenticacion/autenticacion.module';
 import { CanchasModule } from './canchas/canchas.module';
 import { HorariosModule } from './horarios/horarios.module';
+import { UsuariosModule } from './usuarios/usuarios.module';
 
 @Module({
-  imports: [PrismaModule, AutenticacionModule, CanchasModule, HorariosModule],
+  imports: [PrismaModule, AutenticacionModule, CanchasModule, HorariosModule, UsuariosModule],
 })
 export class AppModule {}

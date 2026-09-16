@@ -146,16 +146,10 @@ app/
 
 ## Fase actual
 
-**FASE 1 — Base**
+**Backend del MVP** — completando los módulos de negocio core en NestJS.
+Orden: `UsuariosModule` → `ReservasModule` → `TurnosFijosModule` → Frontend Next.js.
 
-- [ ] Configuración del monorepo con Turborepo
-- [ ] Schema de Prisma (todas las entidades)
-- [ ] Migraciones iniciales y seed
-- [ ] Módulo de autenticación (registro, login, JWT)
-- [ ] CRUD de canchas
-- [ ] CRUD de configuración horaria
-
-No avanzar a Fase 2 hasta completar Fase 1.
+Ver SPEC.md para el estado detallado del roadmap y las reglas de cada módulo.
 
 ---
 

@@ -210,34 +210,52 @@ Domingo        → 08:00 a 23:00
 
 ---
 
-## Fases de desarrollo
+## Roadmap
 
-### Fase 1 — Base
+### ✅ Base (completa)
 
-- Configuración del monorepo (Turborepo)
-- Schema de Prisma y migraciones
-- Autenticación (registro, login, roles, JWT)
-- CRUD de canchas y configuración horaria
+- Monorepo Turborepo + Docker/PostgreSQL
+- Schema Prisma completo (6 entidades + enums)
+- Migraciones y seed inicial (3 canchas, 7 configuraciones horarias, usuario admin)
+- Autenticación: registro, login, JWT, guards de rol
+- CRUD Canchas
+- CRUD Configuración horaria (por día de semana)
 
-### Fase 2 — Reservas (núcleo)
+### MVP — Backend (en curso)
 
-- Cálculo dinámico de slots disponibles
-- Solicitud de reserva (cliente)
-- Gestión de reservas (admin): aceptar, rechazar
-- Disponibilidad en tiempo real (WebSockets/SSE)
+#### `UsuariosModule`
+- Listar usuarios (admin)
+- Obtener usuario por id (admin)
+- Crear usuario desde admin (con o sin email/contraseña, para clientes que no se registran solos)
+- Activar / desactivar usuario
 
-### Fase 3 — Turnos fijos
+#### `ReservasModule`
+- Calcular slots disponibles dinámicamente (por cancha y fecha)
+- Solicitar reserva (cliente)
+- Crear reserva manual (admin — confirma directamente, puede ir fuera del horario base)
+- Confirmar reserva (admin) → cancela automáticamente las demás PENDIENTES del mismo slot
+- Rechazar / cancelar reserva (admin o cliente sobre la propia)
+- Listar reservas (admin: todas; cliente: las propias)
 
-- Gestión de turnos fijos (admin)
-- Mensajes automáticos de confirmación semanal
-- Opción 1: mensajes manuales asistidos
-- Opción 2: WhatsApp Business API (costo mensual)
+#### `TurnosFijosModule`
+- Crear turno fijo (admin)
+- Desactivar turno fijo permanentemente
+- Registrar excepción puntual (cancelar un día específico sin desactivar el fijo)
+- Listar turnos fijos activos (admin)
 
-### Fase 4 — Extras
+### MVP — Frontend (pendiente, después del backend)
 
-- Notificaciones push / email
+- Inicializar Next.js + estructura de rutas `(public)`, `(cliente)`, `(admin)`
+- Auth: login y registro
+- Panel admin: vista de disponibilidad por día/cancha, lista de pendientes, reserva manual, turnos fijos
+- Vista cliente: ver disponibilidad, solicitar reserva, mis reservas
+
+### Post-MVP
+
+- Notificaciones push / email al cambiar estado de una reserva
 - Pago de seña con MercadoPago
-- Landing page completa del predio
+- WhatsApp Business API (mensajes automáticos de confirmación a fijos)
+- Landing page pública del predio
 - Exportación a Google Sheets
 
 ---
