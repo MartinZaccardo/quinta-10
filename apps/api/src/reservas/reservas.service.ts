@@ -6,8 +6,9 @@ import {
   ForbiddenException,
 } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
-import { DiaSemana, EstadoReserva, RolUsuario } from '../generated/prisma/client';
+import { EstadoReserva, RolUsuario } from '../generated/prisma/client';
 import { JwtPayload } from '../autenticacion/strategies/jwt.strategy';
+import { parsearFechaUTC, fechaADiaSemana, superposicion } from '../common/tiempo.util';
 import { ConsultarSlotsDto } from './dto/consultar-slots.dto';
 import { SolicitarReservaDto } from './dto/solicitar-reserva.dto';
 import { CrearReservaManualDto } from './dto/crear-reserva-manual.dto';
@@ -20,30 +21,9 @@ export interface BloqueHorario {
   estado: EstadoBloque;
 }
 
-const DIAS_SEMANA: DiaSemana[] = [
-  DiaSemana.DOMINGO,
-  DiaSemana.LUNES,
-  DiaSemana.MARTES,
-  DiaSemana.MIERCOLES,
-  DiaSemana.JUEVES,
-  DiaSemana.VIERNES,
-  DiaSemana.SABADO,
-];
-
-function parsearFechaUTC(fechaStr: string): Date {
-  const [anio, mes, dia] = fechaStr.split('-').map(Number);
-  return new Date(Date.UTC(anio, mes - 1, dia));
-}
-
-function fechaADiaSemana(fecha: Date): DiaSemana {
-  return DIAS_SEMANA[fecha.getUTCDay()];
-}
-
-// Dos intervalos [inicioA, finA) y [inicioB, finB) se superponen si y solo si:
-// inicioA < finB AND finA > inicioB
-function superposicion(inicioA: number, finA: number, inicioB: number, finB: number): boolean {
-  return inicioA < finB && finA > inicioB;
-}
+type ConfigHoraria = { horaApertura: number; horaCierre: number; intervaloMinutos: number };
+type ReservaConEstado = { estado: EstadoReserva; horaInicio: number; horaFin: number };
+type IntervaloHorario = { horaInicio: number; horaFin: number };
 
 @Injectable()
 export class ReservasService {
@@ -58,11 +38,7 @@ export class ReservasService {
 
     const [reservas, turnosFijos] = await Promise.all([
       this.prisma.db.reserva.findMany({
-        where: {
-          canchaId: dto.canchaId,
-          fechaReserva: fecha,
-          estado: { not: EstadoReserva.CANCELADA },
-        },
+        where: { canchaId: dto.canchaId, fechaReserva: fecha, estado: { not: EstadoReserva.CANCELADA } },
       }),
       this.prisma.db.turnoFijo.findMany({
         where: {
@@ -75,28 +51,7 @@ export class ReservasService {
       }),
     ]);
 
-    const bloques: BloqueHorario[] = [];
-
-    for (let inicio = config.horaApertura; inicio < config.horaCierre; inicio += config.intervaloMinutos) {
-      const fin = inicio + config.intervaloMinutos;
-
-      const hayConfirmada = reservas.some(
-        r => r.estado === EstadoReserva.CONFIRMADA && superposicion(inicio, fin, r.horaInicio, r.horaFin),
-      );
-
-      if (hayConfirmada) {
-        bloques.push({ horaInicio: inicio, horaFin: fin, estado: 'OCUPADO' });
-        continue;
-      }
-
-      const hayPendiente =
-        reservas.some(r => r.estado === EstadoReserva.PENDIENTE && superposicion(inicio, fin, r.horaInicio, r.horaFin)) ||
-        turnosFijos.some(t => superposicion(inicio, fin, t.horaInicio, t.horaFin));
-
-      bloques.push({ horaInicio: inicio, horaFin: fin, estado: hayPendiente ? 'PENDIENTE' : 'DISPONIBLE' });
-    }
-
-    return bloques;
+    return this.generarBloques(config, reservas, turnosFijos);
   }
 
   async solicitar(dto: SolicitarReservaDto, usuarioId: string) {
@@ -255,6 +210,35 @@ export class ReservasService {
       include: { cancha: { select: { id: true, nombre: true, tipo: true } } },
       orderBy: [{ fechaReserva: 'desc' }, { horaInicio: 'asc' }],
     });
+  }
+
+  private generarBloques(
+    config: ConfigHoraria,
+    reservas: ReservaConEstado[],
+    turnosFijos: IntervaloHorario[],
+  ): BloqueHorario[] {
+    const bloques: BloqueHorario[] = [];
+
+    for (let inicio = config.horaApertura; inicio < config.horaCierre; inicio += config.intervaloMinutos) {
+      const fin = inicio + config.intervaloMinutos;
+
+      const hayConfirmada = reservas.some(
+        r => r.estado === EstadoReserva.CONFIRMADA && superposicion(inicio, fin, r.horaInicio, r.horaFin),
+      );
+
+      if (hayConfirmada) {
+        bloques.push({ horaInicio: inicio, horaFin: fin, estado: 'OCUPADO' });
+        continue;
+      }
+
+      const hayPendiente =
+        reservas.some(r => r.estado === EstadoReserva.PENDIENTE && superposicion(inicio, fin, r.horaInicio, r.horaFin)) ||
+        turnosFijos.some(t => superposicion(inicio, fin, t.horaInicio, t.horaFin));
+
+      bloques.push({ horaInicio: inicio, horaFin: fin, estado: hayPendiente ? 'PENDIENTE' : 'DISPONIBLE' });
+    }
+
+    return bloques;
   }
 
   private async validarSinConfirmada(canchaId: string, fecha: Date, horaInicio: number, horaFin: number) {

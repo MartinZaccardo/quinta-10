@@ -5,8 +5,9 @@ import { CanchasModule } from './canchas/canchas.module';
 import { HorariosModule } from './horarios/horarios.module';
 import { UsuariosModule } from './usuarios/usuarios.module';
 import { ReservasModule } from './reservas/reservas.module';
+import { TurnosFijosModule } from './turnos-fijos/turnos-fijos.module';
 
 @Module({
-  imports: [PrismaModule, AutenticacionModule, CanchasModule, HorariosModule, UsuariosModule, ReservasModule],
+  imports: [PrismaModule, AutenticacionModule, CanchasModule, HorariosModule, UsuariosModule, ReservasModule, TurnosFijosModule],
 })
 export class AppModule {}
