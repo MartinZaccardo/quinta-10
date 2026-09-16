@@ -12,12 +12,21 @@ export interface UsuarioAutenticado {
   rol: Rol;
 }
 
+interface RegistroData {
+  nombre: string;
+  apellido: string;
+  email: string;
+  contrasena: string;
+  numeroWhatsApp: string;
+}
+
 interface AuthContextType {
   usuario: UsuarioAutenticado | null;
   estaAutenticado: boolean;
   esAdmin: boolean;
   cargando: boolean;
   login: (email: string, contrasena: string) => Promise<void>;
+  registro: (data: RegistroData) => Promise<void>;
   logout: () => Promise<void>;
 }
 
@@ -27,6 +36,7 @@ export const AuthContext = createContext<AuthContextType>({
   esAdmin: false,
   cargando: true,
   login: async () => {},
+  registro: async () => {},
   logout: async () => {},
 });
 
@@ -42,10 +52,20 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       .finally(() => setCargando(false));
   }, []);
 
+  function redirigirSegunRol(u: UsuarioAutenticado) {
+    router.push(u.rol === 'ADMINISTRADOR' ? '/admin/disponibilidad' : '/cliente/disponibilidad');
+  }
+
   async function login(email: string, contrasena: string) {
     const usuarioData = await api.post<UsuarioAutenticado>('/auth/login', { email, contrasena });
     setUsuario(usuarioData);
-    router.push(usuarioData.rol === 'ADMINISTRADOR' ? '/admin/disponibilidad' : '/cliente/disponibilidad');
+    redirigirSegunRol(usuarioData);
+  }
+
+  async function registro(data: RegistroData) {
+    const usuarioData = await api.post<UsuarioAutenticado>('/auth/registro', data);
+    setUsuario(usuarioData);
+    redirigirSegunRol(usuarioData);
   }
 
   async function logout() {
@@ -61,6 +81,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       esAdmin: usuario?.rol === 'ADMINISTRADOR',
       cargando,
       login,
+      registro,
       logout,
     }}>
       {children}
