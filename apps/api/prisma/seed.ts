@@ -70,7 +70,6 @@ async function main() {
         diaSemana: dia as DiaSemana,
         horaApertura: horario.apertura,
         horaCierre: horario.cierre,
-        intervaloMinutos: 30,
       },
     });
   }

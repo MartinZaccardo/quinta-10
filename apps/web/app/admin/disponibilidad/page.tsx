@@ -4,12 +4,14 @@ import { useState } from 'react';
 import useSWR from 'swr';
 import { swrFetcher } from '@/lib/api';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { GrillaDisponibilidad } from '@/components/admin/grilla-disponibilidad';
+import { CalendarioDia } from '@/components/admin/calendario-dia';
+
+type TipoCancha = 'F5' | 'F6' | 'PADEL';
 
 interface Cancha {
   id: string;
   nombre: string;
-  tipo: string;
+  tipo: TipoCancha;
   activa: boolean;
 }
 
@@ -62,9 +64,10 @@ export default function PaginaDisponibilidad() {
 
         {canchasActivas.map((cancha) => (
           <TabsContent key={cancha.id} value={cancha.id}>
-            <GrillaDisponibilidad
+            <CalendarioDia
               canchaId={cancha.id}
               nombreCancha={cancha.nombre}
+              tipoCancha={cancha.tipo}
               fecha={fecha}
             />
           </TabsContent>

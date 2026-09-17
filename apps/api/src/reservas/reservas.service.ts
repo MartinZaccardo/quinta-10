@@ -19,11 +19,22 @@ export interface BloqueHorario {
   horaInicio: number;
   horaFin: number;
   estado: EstadoBloque;
+  contacto?: string;
 }
 
-type ConfigHoraria = { horaApertura: number; horaCierre: number; intervaloMinutos: number };
-type ReservaConEstado = { estado: EstadoReserva; horaInicio: number; horaFin: number };
-type IntervaloHorario = { horaInicio: number; horaFin: number };
+type ConfigHoraria = { horaApertura: number; horaCierre: number };
+type ReservaConEstado = {
+  estado: EstadoReserva;
+  horaInicio: number;
+  horaFin: number;
+  nombreContacto?: string | null;
+  usuario?: { nombre: string; apellido: string } | null;
+};
+type IntervaloHorario = {
+  horaInicio: number;
+  horaFin: number;
+  usuario?: { nombre: string; apellido: string } | null;
+};
 
 @Injectable()
 export class ReservasService {
@@ -33,12 +44,23 @@ export class ReservasService {
     const fecha = parsearFechaUTC(dto.fecha);
     const diaSemana = fechaADiaSemana(fecha);
 
-    const config = await this.prisma.db.configuracionHoraria.findUnique({ where: { diaSemana } });
-    if (!config) return [];
+    const [cancha, config] = await Promise.all([
+      this.prisma.db.cancha.findUnique({ where: { id: dto.canchaId } }),
+      this.prisma.db.configuracionHoraria.findUnique({ where: { diaSemana } }),
+    ]);
+
+    if (!cancha?.activa || !config) return [];
 
     const [reservas, turnosFijos] = await Promise.all([
       this.prisma.db.reserva.findMany({
         where: { canchaId: dto.canchaId, fechaReserva: fecha, estado: { not: EstadoReserva.CANCELADA } },
+        select: {
+          estado: true,
+          horaInicio: true,
+          horaFin: true,
+          nombreContacto: true,
+          usuario: { select: { nombre: true, apellido: true } },
+        },
       }),
       this.prisma.db.turnoFijo.findMany({
         where: {
@@ -48,10 +70,15 @@ export class ReservasService {
           fechaInicio: { lte: fecha },
           excepciones: { none: { fechaExcluida: fecha } },
         },
+        select: {
+          horaInicio: true,
+          horaFin: true,
+          usuario: { select: { nombre: true, apellido: true } },
+        },
       }),
     ]);
 
-    return this.generarBloques(config, reservas, turnosFijos);
+    return this.generarBloques(config, cancha.intervaloMinutos, reservas, turnosFijos);
   }
 
   async solicitar(dto: SolicitarReservaDto, usuarioId: string) {
@@ -73,11 +100,11 @@ export class ReservasService {
     const config = await this.prisma.db.configuracionHoraria.findUnique({ where: { diaSemana } });
     if (!config) throw new BadRequestException('No hay configuración horaria para ese día');
 
-    if (duracion % config.intervaloMinutos !== 0) {
-      throw new BadRequestException(`La duración debe ser múltiplo de ${config.intervaloMinutos} minutos`);
+    if (duracion % cancha.intervaloMinutos !== 0) {
+      throw new BadRequestException(`La duración debe ser múltiplo de ${cancha.intervaloMinutos} minutos`);
     }
 
-    if ((dto.horaInicio - config.horaApertura) % config.intervaloMinutos !== 0) {
+    if ((dto.horaInicio - config.horaApertura) % cancha.intervaloMinutos !== 0) {
       throw new BadRequestException('La hora de inicio no está alineada al intervalo configurado');
     }
 
@@ -214,28 +241,46 @@ export class ReservasService {
 
   private generarBloques(
     config: ConfigHoraria,
+    intervaloMinutos: number,
     reservas: ReservaConEstado[],
     turnosFijos: IntervaloHorario[],
   ): BloqueHorario[] {
     const bloques: BloqueHorario[] = [];
 
-    for (let inicio = config.horaApertura; inicio < config.horaCierre; inicio += config.intervaloMinutos) {
-      const fin = inicio + config.intervaloMinutos;
+    for (let inicio = config.horaApertura; inicio < config.horaCierre; inicio += intervaloMinutos) {
+      const fin = inicio + intervaloMinutos;
 
-      const hayConfirmada = reservas.some(
+      const reservaConfirmada = reservas.find(
         r => r.estado === EstadoReserva.CONFIRMADA && superposicion(inicio, fin, r.horaInicio, r.horaFin),
       );
 
-      if (hayConfirmada) {
-        bloques.push({ horaInicio: inicio, horaFin: fin, estado: 'OCUPADO' });
+      if (reservaConfirmada) {
+        const contacto = reservaConfirmada.usuario
+          ? `${reservaConfirmada.usuario.nombre} ${reservaConfirmada.usuario.apellido}`
+          : (reservaConfirmada.nombreContacto ?? undefined);
+        bloques.push({ horaInicio: inicio, horaFin: fin, estado: 'OCUPADO', contacto });
         continue;
       }
 
-      const hayPendiente =
-        reservas.some(r => r.estado === EstadoReserva.PENDIENTE && superposicion(inicio, fin, r.horaInicio, r.horaFin)) ||
-        turnosFijos.some(t => superposicion(inicio, fin, t.horaInicio, t.horaFin));
+      const reservaPendiente = reservas.find(
+        r => r.estado === EstadoReserva.PENDIENTE && superposicion(inicio, fin, r.horaInicio, r.horaFin),
+      );
+      const turnoFijoSolapado = turnosFijos.find(t => superposicion(inicio, fin, t.horaInicio, t.horaFin));
 
-      bloques.push({ horaInicio: inicio, horaFin: fin, estado: hayPendiente ? 'PENDIENTE' : 'DISPONIBLE' });
+      if (reservaPendiente || turnoFijoSolapado) {
+        let contacto: string | undefined;
+        if (reservaPendiente) {
+          contacto = reservaPendiente.usuario
+            ? `${reservaPendiente.usuario.nombre} ${reservaPendiente.usuario.apellido}`
+            : (reservaPendiente.nombreContacto ?? undefined);
+        } else if (turnoFijoSolapado?.usuario) {
+          contacto = `${turnoFijoSolapado.usuario.nombre} ${turnoFijoSolapado.usuario.apellido}`;
+        }
+        bloques.push({ horaInicio: inicio, horaFin: fin, estado: 'PENDIENTE', contacto });
+        continue;
+      }
+
+      bloques.push({ horaInicio: inicio, horaFin: fin, estado: 'DISPONIBLE' });
     }
 
     return bloques;

@@ -12,10 +12,4 @@ export class ActualizarHorarioDto {
   @Max(1560)
   @IsOptional()
   horaCierre?: number;
-
-  @IsInt()
-  @Min(30)
-  @Max(60)
-  @IsOptional()
-  intervaloMinutos?: number;
 }

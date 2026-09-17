@@ -39,11 +39,12 @@ enum DiaSemana {
 // ─── Modelos ─────────────────────────────────────────────────────────────────
 
 model Cancha {
-  id            String     @id @default(uuid())
-  nombre        String
-  tipo          TipoCancha
-  precioPorHora Decimal    @map("precio_por_hora") @db.Decimal(10, 2)
-  activa        Boolean    @default(true)
+  id               String     @id @default(uuid())
+  nombre           String
+  tipo             TipoCancha
+  precioPorHora    Decimal    @map("precio_por_hora") @db.Decimal(10, 2)
+  intervaloMinutos Int        @default(60) @map("intervalo_minutos")
+  activa           Boolean    @default(true)
 
   reservas    Reserva[]
   turnosFijos TurnoFijo[]
@@ -55,11 +56,10 @@ model Cancha {
 // medianoche. horaCierre puede superar 1440 para indicar que cierra
 // pasada la medianoche (ej: 1560 = 02:00 AM del día siguiente).
 model ConfiguracionHoraria {
-  id               String    @id @default(uuid())
-  diaSemana        DiaSemana @unique @map("dia_semana")
-  horaApertura     Int       @map("hora_apertura")
-  horaCierre       Int       @map("hora_cierre")
-  intervaloMinutos Int       @default(30) @map("intervalo_minutos")
+  id           String    @id @default(uuid())
+  diaSemana    DiaSemana @unique @map("dia_semana")
+  horaApertura Int       @map("hora_apertura")
+  horaCierre   Int       @map("hora_cierre")
 
   @@map("configuracion_horaria")
 }
