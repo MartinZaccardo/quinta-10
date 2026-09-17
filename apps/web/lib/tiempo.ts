@@ -9,3 +9,12 @@ export function minutosAHora(minutos: number): string {
 export function formatearRango(horaInicio: number, horaFin: number): string {
   return `${minutosAHora(horaInicio)} – ${minutosAHora(horaFin)}`;
 }
+
+export function formatearFecha(isoFecha: string): string {
+  return new Date(isoFecha).toLocaleDateString('es-AR', {
+    weekday: 'short',
+    day: 'numeric',
+    month: 'short',
+    timeZone: 'UTC',
+  });
+}
