@@ -34,7 +34,10 @@ export function CalendarioCliente({ canchaId, nombreCancha, tipoCancha, fecha }:
     return <div className="py-10 text-center text-muted-foreground text-sm">Sin horarios configurados para este día.</div>;
   }
 
-  const entradas = agruparNoDisponibles(slots);
+  const slotsMostrados = slots.map(s =>
+    s.estado === 'PENDIENTE' ? { ...s, estado: 'DISPONIBLE' as const } : s
+  );
+  const entradas = agruparNoDisponibles(slotsMostrados);
   const duraciones = DURACIONES_POR_TIPO[tipoCancha];
 
   function seleccionarSlot(horaInicio: number) {
@@ -101,7 +104,7 @@ export function CalendarioCliente({ canchaId, nombreCancha, tipoCancha, fecha }:
                   <p className="text-sm font-medium text-gray-700">¿Cuánto tiempo?</p>
                   <div className="flex gap-2 flex-wrap">
                     {duraciones.map((d) => {
-                      const valida = esDuracionValida(slots, entrada.horaInicio, d.minutos);
+                      const valida = esDuracionValida(slotsMostrados, entrada.horaInicio, d.minutos);
                       const seleccionada = duracionSeleccionada === d.minutos;
                       return (
                         <button
