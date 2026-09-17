@@ -20,6 +20,7 @@ export interface BloqueHorario {
   horaFin: number;
   estado: EstadoBloque;
   contacto?: string;
+  telefono?: string;
 }
 
 type ConfigHoraria = { horaApertura: number; horaCierre: number };
@@ -28,12 +29,13 @@ type ReservaConEstado = {
   horaInicio: number;
   horaFin: number;
   nombreContacto?: string | null;
-  usuario?: { nombre: string; apellido: string } | null;
+  telefonoContacto?: string | null;
+  usuario?: { nombre: string; apellido: string; numeroWhatsApp: string } | null;
 };
 type IntervaloHorario = {
   horaInicio: number;
   horaFin: number;
-  usuario?: { nombre: string; apellido: string } | null;
+  usuario?: { nombre: string; apellido: string; numeroWhatsApp: string } | null;
 };
 
 @Injectable()
@@ -59,7 +61,8 @@ export class ReservasService {
           horaInicio: true,
           horaFin: true,
           nombreContacto: true,
-          usuario: { select: { nombre: true, apellido: true } },
+          telefonoContacto: true,
+          usuario: { select: { nombre: true, apellido: true, numeroWhatsApp: true } },
         },
       }),
       this.prisma.db.turnoFijo.findMany({
@@ -73,7 +76,7 @@ export class ReservasService {
         select: {
           horaInicio: true,
           horaFin: true,
-          usuario: { select: { nombre: true, apellido: true } },
+          usuario: { select: { nombre: true, apellido: true, numeroWhatsApp: true } },
         },
       }),
     ]);
@@ -258,7 +261,8 @@ export class ReservasService {
         const contacto = reservaConfirmada.usuario
           ? `${reservaConfirmada.usuario.nombre} ${reservaConfirmada.usuario.apellido}`
           : (reservaConfirmada.nombreContacto ?? undefined);
-        bloques.push({ horaInicio: inicio, horaFin: fin, estado: 'OCUPADO', contacto });
+        const telefono = reservaConfirmada.usuario?.numeroWhatsApp ?? reservaConfirmada.telefonoContacto ?? undefined;
+        bloques.push({ horaInicio: inicio, horaFin: fin, estado: 'OCUPADO', contacto, telefono });
         continue;
       }
 
@@ -269,14 +273,17 @@ export class ReservasService {
 
       if (reservaPendiente || turnoFijoSolapado) {
         let contacto: string | undefined;
+        let telefono: string | undefined;
         if (reservaPendiente) {
           contacto = reservaPendiente.usuario
             ? `${reservaPendiente.usuario.nombre} ${reservaPendiente.usuario.apellido}`
             : (reservaPendiente.nombreContacto ?? undefined);
+          telefono = reservaPendiente.usuario?.numeroWhatsApp ?? reservaPendiente.telefonoContacto ?? undefined;
         } else if (turnoFijoSolapado?.usuario) {
           contacto = `${turnoFijoSolapado.usuario.nombre} ${turnoFijoSolapado.usuario.apellido}`;
+          telefono = turnoFijoSolapado.usuario.numeroWhatsApp;
         }
-        bloques.push({ horaInicio: inicio, horaFin: fin, estado: 'PENDIENTE', contacto });
+        bloques.push({ horaInicio: inicio, horaFin: fin, estado: 'PENDIENTE', contacto, telefono });
         continue;
       }
 

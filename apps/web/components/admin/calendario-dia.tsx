@@ -14,6 +14,7 @@ interface BloqueHorario {
   horaFin: number;
   estado: EstadoBloque;
   contacto?: string;
+  telefono?: string;
 }
 
 const DURACIONES_POR_TIPO: Record<TipoCancha, { minutos: number; etiqueta: string }[]> = {
@@ -128,6 +129,11 @@ export function CalendarioDia({ canchaId, nombreCancha, tipoCancha, fecha }: Pro
                 </div>
                 {entrada.contacto && (
                   <p className="text-sm font-medium mt-0.5 text-gray-800">{entrada.contacto}</p>
+                )}
+                {entrada.telefono && (
+                  <p className="text-xs text-gray-500 mt-0.5">
+                    <span className="font-medium">Teléfono:</span> {entrada.telefono}
+                  </p>
                 )}
               </div>
             );
