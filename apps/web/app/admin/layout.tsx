@@ -8,6 +8,7 @@ import { useAuth } from '@/contexts/auth';
 const NAV = [
   { href: '/admin/disponibilidad', label: 'Disponibilidad' },
   { href: '/admin/reservas',       label: 'Reservas' },
+  { href: '/admin/turnos-fijos',   label: 'Turnos fijos' },
 ];
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
