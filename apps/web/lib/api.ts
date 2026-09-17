@@ -14,8 +14,12 @@ async function pedido<T>(path: string, init?: RequestInit): Promise<T> {
     const enRutaPublica = ['/login', '/registro'].some((r) =>
       window.location.pathname.startsWith(r),
     );
-    if (!enRutaPublica) window.location.href = '/login';
-    throw new Error('No autorizado');
+    if (!enRutaPublica) {
+      window.location.href = '/login';
+      throw new Error('No autorizado');
+    }
+    const error = await res.json().catch(() => ({ message: 'No autorizado' }));
+    throw new Error(error.message ?? 'No autorizado');
   }
 
   if (!res.ok) {

@@ -4,8 +4,6 @@ import { useState } from 'react';
 import api from '@/lib/api';
 import { formatearRango } from '@/lib/tiempo';
 import { Button } from '@/components/ui/button';
-import { Label } from '@/components/ui/label';
-import { Textarea } from '@/components/ui/textarea';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 
 interface Props {
@@ -29,7 +27,6 @@ export function ModalSolicitarReserva({
   onCerrar,
   onSolicitada,
 }: Props) {
-  const [mensaje, setMensaje] = useState('');
   const [error, setError] = useState('');
   const [cargando, setCargando] = useState(false);
 
@@ -38,13 +35,7 @@ export function ModalSolicitarReserva({
     setError('');
     setCargando(true);
     try {
-      await api.post('/reservas', {
-        canchaId,
-        fecha,
-        horaInicio,
-        horaFin,
-        mensajeOpcional: mensaje || undefined,
-      });
+      await api.post('/reservas', { canchaId, fecha, horaInicio, horaFin });
       onSolicitada();
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Error al solicitar la reserva');
@@ -72,17 +63,6 @@ export function ModalSolicitarReserva({
               {error}
             </p>
           )}
-
-          <div className="space-y-1">
-            <Label htmlFor="mensaje">Mensaje opcional</Label>
-            <Textarea
-              id="mensaje"
-              value={mensaje}
-              onChange={(e) => setMensaje(e.target.value)}
-              placeholder="Ej: somos 6 personas, necesitamos pecheras..."
-              rows={3}
-            />
-          </div>
 
           <DialogFooter>
             <Button type="button" variant="outline" onClick={onCerrar} disabled={cargando}>
