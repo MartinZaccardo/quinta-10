@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
+import { Eye, EyeOff } from 'lucide-react';
 import { toast } from 'sonner';
 import { useAuth } from '@/contexts/auth';
 import { Button } from '@/components/ui/button';
@@ -18,6 +19,7 @@ export default function PaginaRegistro() {
     contrasena: '',
     numeroWhatsApp: '',
   });
+  const [mostrarContrasena, setMostrarContrasena] = useState(false);
   const [error, setError] = useState('');
   const [cargando, setCargando] = useState(false);
 
@@ -106,15 +108,26 @@ export default function PaginaRegistro() {
 
             <div className="space-y-1">
               <Label htmlFor="contrasena">Contraseña</Label>
-              <Input
-                id="contrasena"
-                type="password"
-                value={form.contrasena}
-                onChange={actualizar('contrasena')}
-                placeholder="Mínimo 6 caracteres"
-                required
-                autoComplete="new-password"
-              />
+              <div className="relative">
+                <Input
+                  id="contrasena"
+                  type={mostrarContrasena ? 'text' : 'password'}
+                  value={form.contrasena}
+                  onChange={actualizar('contrasena')}
+                  placeholder="Mínimo 6 caracteres"
+                  required
+                  autoComplete="new-password"
+                  className="pr-10"
+                />
+                <button
+                  type="button"
+                  onClick={() => setMostrarContrasena(v => !v)}
+                  className="absolute inset-y-0 right-0 flex items-center px-3 text-muted-foreground hover:text-foreground"
+                  tabIndex={-1}
+                >
+                  {mostrarContrasena ? <EyeOff size={16} /> : <Eye size={16} />}
+                </button>
+              </div>
             </div>
           </CardContent>
 
