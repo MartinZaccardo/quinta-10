@@ -54,6 +54,16 @@ export function ModalCrearTurnoFijo({ abierto, onCerrar, onCreado }: Props) {
 
   const opcionesFin = OPCIONES_HORARIO.filter(o => horaInicio ? o.minutos > Number(horaInicio) : true);
 
+  function resetear() {
+    setCanchaId('');
+    setUsuarioId('');
+    setDiaSemana('');
+    setHoraInicio('');
+    setHoraFin('');
+    setFechaInicio('');
+    setError('');
+  }
+
   async function manejarSubmit(e: React.SyntheticEvent<HTMLFormElement>) {
     e.preventDefault();
     if (!usuarioId) { setError('Seleccioná un cliente'); return; }
@@ -69,6 +79,7 @@ export function ModalCrearTurnoFijo({ abierto, onCerrar, onCreado }: Props) {
         fechaInicio,
       });
       toast.success('Turno fijo creado');
+      resetear();
       onCreado();
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Error al crear el turno fijo');
@@ -78,8 +89,13 @@ export function ModalCrearTurnoFijo({ abierto, onCerrar, onCreado }: Props) {
     }
   }
 
+  function cerrar() {
+    resetear();
+    onCerrar();
+  }
+
   return (
-    <Dialog open={abierto} onOpenChange={(open) => !open && onCerrar()}>
+    <Dialog open={abierto} onOpenChange={(open) => !open && cerrar()}>
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
           <DialogTitle>Nuevo turno fijo</DialogTitle>
@@ -154,7 +170,7 @@ export function ModalCrearTurnoFijo({ abierto, onCerrar, onCreado }: Props) {
           </div>
 
           <DialogFooter>
-            <Button type="button" variant="outline" onClick={onCerrar} disabled={cargando}>Cancelar</Button>
+            <Button type="button" variant="outline" onClick={cerrar} disabled={cargando}>Cancelar</Button>
             <Button type="submit" disabled={cargando}>{cargando ? 'Guardando...' : 'Crear turno fijo'}</Button>
           </DialogFooter>
         </form>

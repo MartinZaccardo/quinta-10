@@ -12,7 +12,7 @@ type EstadoReserva = 'PENDIENTE' | 'CONFIRMADA' | 'CANCELADA';
 
 interface Reserva {
   id: string;
-  cancha: { nombre: string };
+  cancha: { id: string; nombre: string };
   fechaReserva: string;
   horaInicio: number;
   horaFin: number;

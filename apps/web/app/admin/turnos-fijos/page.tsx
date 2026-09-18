@@ -7,6 +7,7 @@ import { swrFetcher } from '@/lib/api';
 import api from '@/lib/api';
 import { formatearRango, formatearFecha } from '@/lib/tiempo';
 import { Button } from '@/components/ui/button';
+import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import { ModalCrearTurnoFijo } from '@/components/admin/modal-crear-turno-fijo';
 import { ModalCancelacionPuntual } from '@/components/admin/modal-cancelacion-puntual';
 
@@ -19,13 +20,15 @@ const NOMBRE_DIA: Record<DiaSemana, string> = {
   JUEVES: 'Jueves', VIERNES: 'Viernes', SABADO: 'Sábado', DOMINGO: 'Domingo',
 };
 
+interface Cancha { id: string; nombre: string }
+
 interface TurnoFijo {
   id: string;
   diaSemana: DiaSemana;
   horaInicio: number;
   horaFin: number;
   fechaInicio: string;
-  cancha: { nombre: string };
+  cancha: { id: string; nombre: string };
   usuario: { nombre: string; apellido: string; numeroWhatsApp: string };
 }
 
@@ -35,14 +38,12 @@ interface CancelacionPendiente {
 }
 
 export default function PaginaTurnosFijos() {
-  const { data: turnos, isLoading, error, mutate } = useSWR<TurnoFijo[]>(
-    '/turnos-fijos',
-    swrFetcher,
-  );
+  const { data: canchas } = useSWR<Cancha[]>('/canchas', swrFetcher);
+  const { data: turnos, isLoading, error, mutate } = useSWR<TurnoFijo[]>('/turnos-fijos', swrFetcher);
 
-  const [modalCrearAbierto, setModalCrearAbierto] = useState(false);
+  const [modalCrearAbierto, setModalCrearAbierto]       = useState(false);
   const [cancelacionPendiente, setCancelacionPendiente] = useState<CancelacionPendiente | null>(null);
-  const [desactivando, setDesactivando] = useState<string | null>(null);
+  const [desactivando, setDesactivando]                 = useState<string | null>(null);
 
   async function desactivar(id: string) {
     setDesactivando(id);
@@ -64,13 +65,6 @@ export default function PaginaTurnosFijos() {
     return <div className="p-6 text-red-500 text-sm">Error al cargar los turnos fijos.</div>;
   }
 
-  const porDia = ORDEN_DIAS.reduce<Record<DiaSemana, TurnoFijo[]>>((acc, dia) => {
-    acc[dia] = turnos?.filter(t => t.diaSemana === dia) ?? [];
-    return acc;
-  }, {} as Record<DiaSemana, TurnoFijo[]>);
-
-  const diasConTurnos = ORDEN_DIAS.filter(d => porDia[d].length > 0);
-
   return (
     <div className="p-6 space-y-6">
       <div className="flex items-center justify-between">
@@ -78,73 +72,93 @@ export default function PaginaTurnosFijos() {
         <Button onClick={() => setModalCrearAbierto(true)}>+ Nuevo turno fijo</Button>
       </div>
 
-      {!diasConTurnos.length ? (
-        <div className="py-16 text-center text-muted-foreground text-sm">
-          No hay turnos fijos activos.
-        </div>
-      ) : (
-        <div className="space-y-8">
-          {diasConTurnos.map((dia) => (
-            <div key={dia}>
-              <h2 className="text-sm font-semibold text-muted-foreground uppercase tracking-wide mb-3">
-                {NOMBRE_DIA[dia]}
-              </h2>
-              <div className="space-y-2">
-                {porDia[dia].map((turno) => (
-                  <div
-                    key={turno.id}
-                    className="bg-white border rounded-lg px-4 py-4 flex items-start justify-between gap-4"
-                  >
-                    <div className="space-y-0.5 min-w-0">
-                      <div className="flex items-center gap-2 flex-wrap text-sm">
-                        <span className="font-medium">{turno.cancha.nombre}</span>
-                        <span className="text-muted-foreground">·</span>
-                        <span className="tabular-nums">{formatearRango(turno.horaInicio, turno.horaFin)}</span>
-                      </div>
-                      <p className="text-sm font-medium text-gray-800">
-                        {turno.usuario.nombre} {turno.usuario.apellido}
-                      </p>
-                      <p className="text-xs text-gray-500">
-                        <span className="font-medium">Teléfono:</span> {turno.usuario.numeroWhatsApp}
-                      </p>
-                      <p className="text-xs text-gray-400">
-                        Desde {formatearFecha(turno.fechaInicio)}
-                      </p>
-                    </div>
+      {canchas?.length ? (
+        <Tabs defaultValue={canchas[0].id}>
+          <TabsList>
+            {canchas.map(c => (
+              <TabsTrigger key={c.id} value={c.id}>{c.nombre}</TabsTrigger>
+            ))}
+          </TabsList>
 
-                    <div className="flex gap-2 shrink-0">
-                      <Button
-                        size="sm"
-                        variant="outline"
-                        onClick={() => setCancelacionPendiente({ turnoFijoId: turno.id, diaSemana: turno.diaSemana })}
-                      >
-                        Cancelar día
-                      </Button>
-                      <Button
-                        size="sm"
-                        variant="outline"
-                        disabled={desactivando === turno.id}
-                        onClick={() => desactivar(turno.id)}
-                        className="text-red-600 hover:text-red-700 hover:bg-red-50 border-red-200"
-                      >
-                        Desactivar
-                      </Button>
-                    </div>
+          {canchas.map(cancha => {
+            const turnosDeCancha = (turnos ?? []).filter(t => t.cancha.id === cancha.id);
+            const diasConTurnos  = ORDEN_DIAS.filter(dia => turnosDeCancha.some(t => t.diaSemana === dia));
+
+            return (
+              <TabsContent key={cancha.id} value={cancha.id} className="mt-4">
+                {!diasConTurnos.length ? (
+                  <div className="py-16 text-center text-muted-foreground text-sm">
+                    No hay turnos fijos para {cancha.nombre}.
                   </div>
-                ))}
-              </div>
-            </div>
-          ))}
+                ) : (
+                  <div className="space-y-8">
+                    {diasConTurnos.map(dia => (
+                      <div key={dia}>
+                        <h2 className="text-sm font-semibold text-muted-foreground uppercase tracking-wide mb-3">
+                          {NOMBRE_DIA[dia]}
+                        </h2>
+                        <div className="space-y-2">
+                          {turnosDeCancha
+                            .filter(t => t.diaSemana === dia)
+                            .map(turno => (
+                              <div
+                                key={turno.id}
+                                className="bg-white border rounded-lg px-4 py-4 flex items-start justify-between gap-4"
+                              >
+                                <div className="space-y-0.5 min-w-0">
+                                  <span className="tabular-nums text-sm font-medium">
+                                    {formatearRango(turno.horaInicio, turno.horaFin)}
+                                  </span>
+                                  <p className="text-sm font-medium text-gray-800">
+                                    {turno.usuario.nombre} {turno.usuario.apellido}
+                                  </p>
+                                  <p className="text-xs text-gray-500">
+                                    <span className="font-medium">Teléfono:</span> {turno.usuario.numeroWhatsApp}
+                                  </p>
+                                  <p className="text-xs text-gray-400">
+                                    Desde {formatearFecha(turno.fechaInicio)}
+                                  </p>
+                                </div>
+
+                                <div className="flex gap-2 shrink-0">
+                                  <Button
+                                    size="sm"
+                                    variant="outline"
+                                    onClick={() => setCancelacionPendiente({ turnoFijoId: turno.id, diaSemana: turno.diaSemana })}
+                                  >
+                                    Cancelar día
+                                  </Button>
+                                  <Button
+                                    size="sm"
+                                    variant="outline"
+                                    disabled={desactivando === turno.id}
+                                    onClick={() => desactivar(turno.id)}
+                                    className="text-red-600 hover:text-red-700 hover:bg-red-50 border-red-200"
+                                  >
+                                    Desactivar
+                                  </Button>
+                                </div>
+                              </div>
+                            ))}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </TabsContent>
+            );
+          })}
+        </Tabs>
+      ) : (
+        <div className="py-16 text-center text-muted-foreground text-sm">
+          No hay canchas configuradas.
         </div>
       )}
 
       <ModalCrearTurnoFijo
         abierto={modalCrearAbierto}
         onCerrar={() => setModalCrearAbierto(false)}
-        onCreado={() => {
-          setModalCrearAbierto(false);
-          mutate();
-        }}
+        onCreado={() => { setModalCrearAbierto(false); mutate(); }}
       />
 
       {cancelacionPendiente && (
@@ -153,10 +167,7 @@ export default function PaginaTurnosFijos() {
           diaSemana={cancelacionPendiente.diaSemana}
           abierto={true}
           onCerrar={() => setCancelacionPendiente(null)}
-          onConfirmada={() => {
-            setCancelacionPendiente(null);
-            mutate();
-          }}
+          onConfirmada={() => { setCancelacionPendiente(null); mutate(); }}
         />
       )}
     </div>

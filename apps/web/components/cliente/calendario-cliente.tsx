@@ -7,6 +7,14 @@ import { formatearRango, minutosAHora } from '@/lib/tiempo';
 import { type TipoCancha, type BloqueHorario, DURACIONES_POR_TIPO, agruparNoDisponibles, esDuracionValida } from '@/lib/canchas';
 import { ModalSolicitarReserva } from './modal-solicitar-reserva';
 
+interface MiReserva {
+  cancha: { id: string };
+  fechaReserva: string;
+  horaInicio: number;
+  horaFin: number;
+  estado: string;
+}
+
 interface Props {
   canchaId: string;
   nombreCancha: string;
@@ -19,6 +27,18 @@ export function CalendarioCliente({ canchaId, nombreCancha, tipoCancha, fecha }:
     `/reservas/slots?canchaId=${canchaId}&fecha=${fecha}`,
     swrFetcher,
   );
+  const { data: misReservas } = useSWR<MiReserva[]>('/reservas/mis-reservas', swrFetcher);
+
+  function esSlotPropio(horaInicio: number, horaFin: number): boolean {
+    return (misReservas ?? []).some(
+      r =>
+        r.cancha.id === canchaId &&
+        r.estado === 'CONFIRMADA' &&
+        r.fechaReserva.startsWith(fecha) &&
+        r.horaInicio <= horaInicio &&
+        r.horaFin >= horaFin,
+    );
+  }
 
   const [horaInicioSeleccionada, setHoraInicioSeleccionada] = useState<number | null>(null);
   const [duracionSeleccionada, setDuracionSeleccionada] = useState<number | null>(null);
@@ -62,11 +82,14 @@ export function CalendarioCliente({ canchaId, nombreCancha, tipoCancha, fecha }:
         {entradas.map((entrada) => {
           if (entrada.estado !== 'DISPONIBLE') {
             const esOcupado = entrada.estado === 'OCUPADO';
+            const esPropio  = esOcupado && esSlotPropio(entrada.horaInicio, entrada.horaFin);
             return (
               <div
                 key={entrada.horaInicio}
                 className={`px-4 py-3 ${
-                  esOcupado
+                  esPropio
+                    ? 'bg-green-50 border-l-4 border-l-green-500'
+                    : esOcupado
                     ? 'bg-red-50 border-l-4 border-l-red-400'
                     : 'bg-yellow-50 border-l-4 border-l-yellow-400'
                 }`}
@@ -76,9 +99,13 @@ export function CalendarioCliente({ canchaId, nombreCancha, tipoCancha, fecha }:
                     {formatearRango(entrada.horaInicio, entrada.horaFin)}
                   </span>
                   <span className={`text-xs font-medium px-2 py-0.5 rounded-full shrink-0 ${
-                    esOcupado ? 'bg-red-100 text-red-700' : 'bg-yellow-100 text-yellow-700'
+                    esPropio
+                      ? 'bg-green-100 text-green-700'
+                      : esOcupado
+                      ? 'bg-red-100 text-red-700'
+                      : 'bg-yellow-100 text-yellow-700'
                   }`}>
-                    {esOcupado ? 'Ocupado' : 'Pendiente'}
+                    {esPropio ? 'Confirmada ✓' : esOcupado ? 'Ocupado' : 'Pendiente'}
                   </span>
                 </div>
               </div>
