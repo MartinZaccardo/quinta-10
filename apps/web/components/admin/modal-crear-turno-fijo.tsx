@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import useSWR from 'swr';
+import { toast } from 'sonner';
 import api, { swrFetcher } from '@/lib/api';
 import { minutosAHora } from '@/lib/tiempo';
 import { Button } from '@/components/ui/button';
@@ -64,9 +65,11 @@ export function ModalCrearTurnoFijo({ abierto, onCerrar, onCreado }: Props) {
         horaFin: Number(horaFin),
         fechaInicio,
       });
+      toast.success('Turno fijo creado');
       onCreado();
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Error al crear el turno fijo');
+      toast.error('Error al crear el turno fijo');
     } finally {
       setCargando(false);
     }

@@ -2,12 +2,13 @@
 
 import { useState } from 'react';
 import useSWR from 'swr';
+import { toast } from 'sonner';
 import { swrFetcher } from '@/lib/api';
 import api from '@/lib/api';
 import { formatearRango, formatearFecha } from '@/lib/tiempo';
 import { Button } from '@/components/ui/button';
 import { ModalCrearTurnoFijo } from '@/components/admin/modal-crear-turno-fijo';
-import { ModalAgregarExcepcion } from '@/components/admin/modal-agregar-excepcion';
+import { ModalCancelacionPuntual } from '@/components/admin/modal-cancelacion-puntual';
 
 type DiaSemana = 'LUNES' | 'MARTES' | 'MIERCOLES' | 'JUEVES' | 'VIERNES' | 'SABADO' | 'DOMINGO';
 
@@ -28,7 +29,7 @@ interface TurnoFijo {
   usuario: { nombre: string; apellido: string; numeroWhatsApp: string };
 }
 
-interface ExcepcionPendiente {
+interface CancelacionPendiente {
   turnoFijoId: string;
   diaSemana: DiaSemana;
 }
@@ -40,14 +41,17 @@ export default function PaginaTurnosFijos() {
   );
 
   const [modalCrearAbierto, setModalCrearAbierto] = useState(false);
-  const [excepcionPendiente, setExcepcionPendiente] = useState<ExcepcionPendiente | null>(null);
+  const [cancelacionPendiente, setCancelacionPendiente] = useState<CancelacionPendiente | null>(null);
   const [desactivando, setDesactivando] = useState<string | null>(null);
 
   async function desactivar(id: string) {
     setDesactivando(id);
     try {
       await api.patch(`/turnos-fijos/${id}/desactivar`);
+      toast.success('Turno fijo desactivado');
       mutate();
+    } catch {
+      toast.error('Error al desactivar el turno fijo');
     } finally {
       setDesactivando(null);
     }
@@ -112,9 +116,9 @@ export default function PaginaTurnosFijos() {
                       <Button
                         size="sm"
                         variant="outline"
-                        onClick={() => setExcepcionPendiente({ turnoFijoId: turno.id, diaSemana: turno.diaSemana })}
+                        onClick={() => setCancelacionPendiente({ turnoFijoId: turno.id, diaSemana: turno.diaSemana })}
                       >
-                        Excepción
+                        Cancelar día
                       </Button>
                       <Button
                         size="sm"
@@ -143,14 +147,14 @@ export default function PaginaTurnosFijos() {
         }}
       />
 
-      {excepcionPendiente && (
-        <ModalAgregarExcepcion
-          turnoFijoId={excepcionPendiente.turnoFijoId}
-          diaSemana={excepcionPendiente.diaSemana}
+      {cancelacionPendiente && (
+        <ModalCancelacionPuntual
+          turnoFijoId={cancelacionPendiente.turnoFijoId}
+          diaSemana={cancelacionPendiente.diaSemana}
           abierto={true}
-          onCerrar={() => setExcepcionPendiente(null)}
-          onAgregada={() => {
-            setExcepcionPendiente(null);
+          onCerrar={() => setCancelacionPendiente(null)}
+          onConfirmada={() => {
+            setCancelacionPendiente(null);
             mutate();
           }}
         />

@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { toast } from 'sonner';
 import api from '@/lib/api';
 import { formatearRango } from '@/lib/tiempo';
 import { Button } from '@/components/ui/button';
@@ -47,9 +48,11 @@ export function ModalCrearReserva({
         nombreContacto: nombre,
         telefonoContacto: telefono,
       });
+      toast.success('Reserva creada');
       onCreada();
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Error al crear la reserva');
+      toast.error('Error al crear la reserva');
     } finally {
       setCargando(false);
     }

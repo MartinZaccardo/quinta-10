@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { toast } from 'sonner';
 import api from '@/lib/api';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
@@ -18,12 +19,12 @@ interface Props {
   diaSemana: DiaSemana;
   abierto: boolean;
   onCerrar: () => void;
-  onAgregada: () => void;
+  onConfirmada: () => void;
 }
 
-export function ModalAgregarExcepcion({ turnoFijoId, diaSemana, abierto, onCerrar, onAgregada }: Props) {
-  const [fecha, setFecha]     = useState('');
-  const [error, setError]     = useState('');
+export function ModalCancelacionPuntual({ turnoFijoId, diaSemana, abierto, onCerrar, onConfirmada }: Props) {
+  const [fecha, setFecha]       = useState('');
+  const [error, setError]       = useState('');
   const [cargando, setCargando] = useState(false);
 
   async function manejarSubmit(e: React.FormEvent<HTMLFormElement>) {
@@ -32,9 +33,12 @@ export function ModalAgregarExcepcion({ turnoFijoId, diaSemana, abierto, onCerra
     setCargando(true);
     try {
       await api.post(`/turnos-fijos/${turnoFijoId}/excepciones`, { fecha });
-      onAgregada();
+      toast.success('Cancelación registrada');
+      onConfirmada();
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Error al agregar la excepción');
+      const mensaje = err instanceof Error ? err.message : 'Error al registrar la cancelación';
+      setError(mensaje);
+      toast.error(mensaje);
     } finally {
       setCargando(false);
     }
@@ -44,7 +48,7 @@ export function ModalAgregarExcepcion({ turnoFijoId, diaSemana, abierto, onCerra
     <Dialog open={abierto} onOpenChange={(open) => !open && onCerrar()}>
       <DialogContent className="sm:max-w-sm">
         <DialogHeader>
-          <DialogTitle>Agregar excepción</DialogTitle>
+          <DialogTitle>Cancelación puntual</DialogTitle>
         </DialogHeader>
 
         <p className="text-sm text-muted-foreground">
@@ -70,7 +74,7 @@ export function ModalAgregarExcepcion({ turnoFijoId, diaSemana, abierto, onCerra
 
           <DialogFooter>
             <Button type="button" variant="outline" onClick={onCerrar} disabled={cargando}>Cancelar</Button>
-            <Button type="submit" disabled={cargando}>{cargando ? 'Guardando...' : 'Confirmar excepción'}</Button>
+            <Button type="submit" disabled={cargando}>{cargando ? 'Guardando...' : 'Confirmar'}</Button>
           </DialogFooter>
         </form>
       </DialogContent>

@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import useSWR from 'swr';
+import { toast } from 'sonner';
 import { swrFetcher } from '@/lib/api';
 import api from '@/lib/api';
 import { formatearRango, formatearFecha } from '@/lib/tiempo';
@@ -36,7 +37,10 @@ export default function PaginaMisReservas() {
     setCancelando(id);
     try {
       await api.patch(`/reservas/${id}/cancelar`);
+      toast.success('Reserva cancelada');
       mutate();
+    } catch {
+      toast.error('Error al cancelar la reserva');
     } finally {
       setCancelando(null);
     }

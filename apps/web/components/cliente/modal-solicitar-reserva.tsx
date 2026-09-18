@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { toast } from 'sonner';
 import api from '@/lib/api';
 import { formatearRango } from '@/lib/tiempo';
 import { Button } from '@/components/ui/button';
@@ -36,9 +37,11 @@ export function ModalSolicitarReserva({
     setCargando(true);
     try {
       await api.post('/reservas', { canchaId, fecha, horaInicio, horaFin });
+      toast.success('Solicitud enviada. Te avisaremos cuando sea confirmada.');
       onSolicitada();
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Error al solicitar la reserva');
+      toast.error('Error al solicitar la reserva');
     } finally {
       setCargando(false);
     }
