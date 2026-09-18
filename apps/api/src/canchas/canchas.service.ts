@@ -8,7 +8,7 @@ export class CanchasService {
   constructor(private readonly prisma: PrismaService) {}
 
   listar() {
-    return this.prisma.db.cancha.findMany({ orderBy: { nombre: 'asc' } });
+    return this.prisma.db.cancha.findMany({ where: { activa: true }, orderBy: { nombre: 'asc' } });
   }
 
   async obtener(id: string) {
