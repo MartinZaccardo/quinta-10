@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import useSWR from 'swr';
+import { Eye, EyeOff } from 'lucide-react';
 import { toast } from 'sonner';
 import { swrFetcher } from '@/lib/api';
 import api from '@/lib/api';
@@ -121,10 +122,11 @@ interface ModalAsignarAccesoProps {
 }
 
 function ModalAsignarAcceso({ usuario, onCerrar, onGuardado }: ModalAsignarAccesoProps) {
-  const [email, setEmail]       = useState(usuario.email ?? '');
-  const [contrasena, setContrasena] = useState('');
-  const [error, setError]       = useState('');
-  const [cargando, setCargando] = useState(false);
+  const [email, setEmail]                   = useState(usuario.email ?? '');
+  const [contrasena, setContrasena]         = useState('');
+  const [mostrarContrasena, setMostrarContrasena] = useState(false);
+  const [error, setError]                   = useState('');
+  const [cargando, setCargando]             = useState(false);
 
   async function manejarSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -166,7 +168,26 @@ function ModalAsignarAcceso({ usuario, onCerrar, onGuardado }: ModalAsignarAcces
 
           <div className="space-y-1">
             <Label htmlFor="aa-contrasena">Contraseña</Label>
-            <Input id="aa-contrasena" type="password" value={contrasena} onChange={e => setContrasena(e.target.value)} placeholder="Mínimo 6 caracteres" minLength={6} required />
+            <div className="relative">
+              <Input
+                id="aa-contrasena"
+                type={mostrarContrasena ? 'text' : 'password'}
+                value={contrasena}
+                onChange={e => setContrasena(e.target.value)}
+                placeholder="Mínimo 6 caracteres"
+                minLength={6}
+                required
+                className="pr-10"
+              />
+              <button
+                type="button"
+                onClick={() => setMostrarContrasena(v => !v)}
+                className="absolute inset-y-0 right-0 flex items-center px-3 text-muted-foreground hover:text-foreground"
+                tabIndex={-1}
+              >
+                {mostrarContrasena ? <EyeOff size={16} /> : <Eye size={16} />}
+              </button>
+            </div>
           </div>
 
           <DialogFooter>
