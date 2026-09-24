@@ -33,7 +33,7 @@ export function ModalCancelacionPuntual({ turnoFijoId, diaSemana, abierto, onCer
     setCargando(true);
     try {
       await api.post(`/turnos-fijos/${turnoFijoId}/excepciones`, { fecha });
-      toast.success('Cancelación registrada');
+      toast.success('Cancelación guardada. El turno no se mostrará ese día.');
       onConfirmada();
     } catch (err) {
       const mensaje = err instanceof Error ? err.message : 'Error al registrar la cancelación';

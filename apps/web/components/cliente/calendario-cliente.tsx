@@ -40,6 +40,17 @@ export function CalendarioCliente({ canchaId, nombreCancha, tipoCancha, fecha }:
     );
   }
 
+  function esSlotPendientePropio(horaInicio: number, horaFin: number): boolean {
+    return (misReservas ?? []).some(
+      r =>
+        r.cancha.id === canchaId &&
+        r.estado === 'PENDIENTE' &&
+        r.fechaReserva.startsWith(fecha) &&
+        r.horaInicio <= horaInicio &&
+        r.horaFin >= horaFin,
+    );
+  }
+
   const [horaInicioSeleccionada, setHoraInicioSeleccionada] = useState<number | null>(null);
   const [duracionSeleccionada, setDuracionSeleccionada] = useState<number | null>(null);
   const [modalAbierto, setModalAbierto] = useState(false);
@@ -54,9 +65,12 @@ export function CalendarioCliente({ canchaId, nombreCancha, tipoCancha, fecha }:
     return <div className="py-10 text-center text-muted-foreground text-sm">Sin horarios configurados para este día.</div>;
   }
 
-  const slotsMostrados = slots.map(s =>
-    s.estado === 'PENDIENTE' ? { ...s, estado: 'DISPONIBLE' as const } : s
-  );
+  const slotsMostrados = slots.map(slot => {
+    if (slot.estado !== 'PENDIENTE') return slot;
+    return esSlotPendientePropio(slot.horaInicio, slot.horaFin)
+      ? slot
+      : { ...slot, estado: 'DISPONIBLE' as const };
+  });
   const entradas = agruparNoDisponibles(slotsMostrados);
   const duraciones = DURACIONES_POR_TIPO[tipoCancha];
 
@@ -81,31 +95,42 @@ export function CalendarioCliente({ canchaId, nombreCancha, tipoCancha, fecha }:
       <div className="mt-4 border rounded-lg overflow-hidden divide-y">
         {entradas.map((entrada) => {
           if (entrada.estado !== 'DISPONIBLE') {
-            const esOcupado = entrada.estado === 'OCUPADO';
-            const esPropio  = esOcupado && esSlotPropio(entrada.horaInicio, entrada.horaFin);
+            const esOcupado          = entrada.estado === 'OCUPADO';
+            const esPropio           = esOcupado && esSlotPropio(entrada.horaInicio, entrada.horaFin);
+            const esPendientePropio  = !esOcupado && esSlotPendientePropio(entrada.horaInicio, entrada.horaFin);
+
+            const claseFondo = esPropio
+              ? 'bg-green-50 border-l-4 border-l-green-500'
+              : esPendientePropio
+              ? 'bg-yellow-50 border-l-4 border-l-yellow-400'
+              : esOcupado
+              ? 'bg-red-50 border-l-4 border-l-red-400'
+              : 'bg-gray-50 border-l-4 border-l-gray-300';
+
+            const claseBadge = esPropio
+              ? 'bg-green-100 text-green-700'
+              : esPendientePropio
+              ? 'bg-yellow-100 text-yellow-700'
+              : esOcupado
+              ? 'bg-red-100 text-red-700'
+              : 'bg-gray-100 text-gray-500';
+
+            const etiqueta = esPropio
+              ? 'Confirmada ✓'
+              : esPendientePropio
+              ? 'Tu solicitud — pendiente'
+              : esOcupado
+              ? 'Ocupado'
+              : 'No disponible';
+
             return (
-              <div
-                key={entrada.horaInicio}
-                className={`px-4 py-3 ${
-                  esPropio
-                    ? 'bg-green-50 border-l-4 border-l-green-500'
-                    : esOcupado
-                    ? 'bg-red-50 border-l-4 border-l-red-400'
-                    : 'bg-yellow-50 border-l-4 border-l-yellow-400'
-                }`}
-              >
+              <div key={entrada.horaInicio} className={`px-4 py-3 ${claseFondo}`}>
                 <div className="flex items-center justify-between gap-2">
                   <span className="tabular-nums text-sm font-medium text-muted-foreground">
                     {formatearRango(entrada.horaInicio, entrada.horaFin)}
                   </span>
-                  <span className={`text-xs font-medium px-2 py-0.5 rounded-full shrink-0 ${
-                    esPropio
-                      ? 'bg-green-100 text-green-700'
-                      : esOcupado
-                      ? 'bg-red-100 text-red-700'
-                      : 'bg-yellow-100 text-yellow-700'
-                  }`}>
-                    {esPropio ? 'Confirmada ✓' : esOcupado ? 'Ocupado' : 'Pendiente'}
+                  <span className={`text-xs font-medium px-2 py-0.5 rounded-full shrink-0 ${claseBadge}`}>
+                    {etiqueta}
                   </span>
                 </div>
               </div>

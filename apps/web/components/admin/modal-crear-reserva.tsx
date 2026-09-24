@@ -66,7 +66,7 @@ export function ModalCrearReserva({
           : { nombreContacto: nombre, telefonoContacto: telefono }
         ),
       });
-      toast.success('Reserva creada');
+      toast.success('Reserva creada y confirmada');
       onCreada();
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Error al crear la reserva');

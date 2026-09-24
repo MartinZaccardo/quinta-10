@@ -37,7 +37,7 @@ export function ModalSolicitarReserva({
     setCargando(true);
     try {
       await api.post('/reservas', { canchaId, fecha, horaInicio, horaFin });
-      toast.success('Solicitud enviada. Te avisaremos cuando sea confirmada.');
+      toast.success('Solicitud enviada. Quedará pendiente hasta que el administrador la confirme.');
       onSolicitada();
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Error al solicitar la reserva');
