@@ -9,22 +9,50 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 
+function validarEmail(valor: string): string {
+  if (!valor.trim()) return 'El email es requerido';
+  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(valor)) return 'Ingresá un email válido';
+  return '';
+}
+
+function validarContrasena(valor: string): string {
+  if (!valor) return 'La contraseña es requerida';
+  if (valor.length < 6) return 'Mínimo 6 caracteres';
+  return '';
+}
+
 export default function PaginaLogin() {
   const { login } = useAuth();
   const [email, setEmail] = useState('');
   const [contrasena, setContrasena] = useState('');
   const [mostrarContrasena, setMostrarContrasena] = useState(false);
-  const [error, setError] = useState('');
+  const [errores, setErrores] = useState<Record<string, string>>({});
+  const [errorGeneral, setErrorGeneral] = useState('');
   const [cargando, setCargando] = useState(false);
+
+  function limpiarError(campo: string) {
+    setErrores(prev => ({ ...prev, [campo]: '' }));
+  }
 
   async function manejarSubmit(e: React.FormEvent) {
     e.preventDefault();
-    setError('');
+
+    const nuevosErrores = {
+      email: validarEmail(email),
+      contrasena: validarContrasena(contrasena),
+    };
+
+    if (Object.values(nuevosErrores).some(Boolean)) {
+      setErrores(nuevosErrores);
+      return;
+    }
+
+    setErrorGeneral('');
     setCargando(true);
     try {
       await login(email, contrasena);
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Error al iniciar sesión');
+      setErrorGeneral(err instanceof Error ? err.message : 'Error al iniciar sesión');
     } finally {
       setCargando(false);
     }
@@ -38,11 +66,11 @@ export default function PaginaLogin() {
           <CardDescription>Iniciá sesión para continuar</CardDescription>
         </CardHeader>
 
-        <form onSubmit={manejarSubmit}>
+        <form onSubmit={manejarSubmit} noValidate>
           <CardContent className="space-y-4">
-            {error && (
+            {errorGeneral && (
               <p className="text-sm text-red-600 bg-red-50 border border-red-200 rounded-md px-3 py-2">
-                {error}
+                {errorGeneral}
               </p>
             )}
 
@@ -52,11 +80,11 @@ export default function PaginaLogin() {
                 id="email"
                 type="email"
                 value={email}
-                onChange={(e) => setEmail(e.target.value)}
+                onChange={(e) => { setEmail(e.target.value); limpiarError('email'); }}
                 placeholder="tu@email.com"
-                required
                 autoComplete="email"
               />
+              {errores.email && <p className="text-xs text-red-600 mt-1">{errores.email}</p>}
             </div>
 
             <div className="space-y-1">
@@ -66,9 +94,8 @@ export default function PaginaLogin() {
                   id="contrasena"
                   type={mostrarContrasena ? 'text' : 'password'}
                   value={contrasena}
-                  onChange={(e) => setContrasena(e.target.value)}
+                  onChange={(e) => { setContrasena(e.target.value); limpiarError('contrasena'); }}
                   placeholder="••••••••"
-                  required
                   autoComplete="current-password"
                   className="pr-10"
                 />
@@ -81,6 +108,7 @@ export default function PaginaLogin() {
                   {mostrarContrasena ? <EyeOff size={16} /> : <Eye size={16} />}
                 </button>
               </div>
+              {errores.contrasena && <p className="text-xs text-red-600 mt-1">{errores.contrasena}</p>}
             </div>
           </CardContent>
 

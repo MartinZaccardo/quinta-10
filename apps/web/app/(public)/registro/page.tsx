@@ -10,9 +10,38 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 
+type CamposForm = {
+  nombre: string;
+  apellido: string;
+  email: string;
+  contrasena: string;
+  numeroWhatsApp: string;
+};
+
+function validarForm(form: CamposForm): Record<string, string> {
+  const errores: Record<string, string> = {};
+
+  if (!form.nombre.trim()) errores.nombre = 'El nombre es requerido';
+  else if (form.nombre.trim().length < 2) errores.nombre = 'Mínimo 2 caracteres';
+
+  if (!form.apellido.trim()) errores.apellido = 'El apellido es requerido';
+  else if (form.apellido.trim().length < 2) errores.apellido = 'Mínimo 2 caracteres';
+
+  if (!form.email.trim()) errores.email = 'El email es requerido';
+  else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email)) errores.email = 'Ingresá un email válido';
+
+  if (!form.numeroWhatsApp.trim()) errores.numeroWhatsApp = 'El número de WhatsApp es requerido';
+  else if (!/^\+\d{10,15}$/.test(form.numeroWhatsApp)) errores.numeroWhatsApp = 'Formato requerido: +549XXXXXXXXXX';
+
+  if (!form.contrasena) errores.contrasena = 'La contraseña es requerida';
+  else if (form.contrasena.length < 6) errores.contrasena = 'Mínimo 6 caracteres';
+
+  return errores;
+}
+
 export default function PaginaRegistro() {
   const { registro } = useAuth();
-  const [form, setForm] = useState({
+  const [form, setForm] = useState<CamposForm>({
     nombre: '',
     apellido: '',
     email: '',
@@ -20,23 +49,33 @@ export default function PaginaRegistro() {
     numeroWhatsApp: '',
   });
   const [mostrarContrasena, setMostrarContrasena] = useState(false);
-  const [error, setError] = useState('');
+  const [errores, setErrores] = useState<Record<string, string>>({});
+  const [errorGeneral, setErrorGeneral] = useState('');
   const [cargando, setCargando] = useState(false);
 
-  function actualizar(campo: keyof typeof form) {
-    return (e: React.ChangeEvent<HTMLInputElement>) =>
-      setForm((prev) => ({ ...prev, [campo]: e.target.value }));
+  function actualizar(campo: keyof CamposForm) {
+    return (e: React.ChangeEvent<HTMLInputElement>) => {
+      setForm(prev => ({ ...prev, [campo]: e.target.value }));
+      setErrores(prev => ({ ...prev, [campo]: '' }));
+    };
   }
 
   async function manejarSubmit(e: React.FormEvent) {
     e.preventDefault();
-    setError('');
+
+    const nuevosErrores = validarForm(form);
+    if (Object.keys(nuevosErrores).length > 0) {
+      setErrores(nuevosErrores);
+      return;
+    }
+
+    setErrorGeneral('');
     setCargando(true);
     try {
       await registro(form);
       toast.success('Cuenta creada correctamente');
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Error al registrarse');
+      setErrorGeneral(err instanceof Error ? err.message : 'Error al registrarse');
     } finally {
       setCargando(false);
     }
@@ -50,11 +89,11 @@ export default function PaginaRegistro() {
           <CardDescription>Creá tu cuenta para reservar</CardDescription>
         </CardHeader>
 
-        <form onSubmit={manejarSubmit}>
+        <form onSubmit={manejarSubmit} noValidate>
           <CardContent className="space-y-4">
-            {error && (
+            {errorGeneral && (
               <p className="text-sm text-red-600 bg-red-50 border border-red-200 rounded-md px-3 py-2">
-                {error}
+                {errorGeneral}
               </p>
             )}
 
@@ -66,8 +105,8 @@ export default function PaginaRegistro() {
                   value={form.nombre}
                   onChange={actualizar('nombre')}
                   placeholder="Juan"
-                  required
                 />
+                {errores.nombre && <p className="text-xs text-red-600 mt-1">{errores.nombre}</p>}
               </div>
               <div className="space-y-1">
                 <Label htmlFor="apellido">Apellido</Label>
@@ -76,8 +115,8 @@ export default function PaginaRegistro() {
                   value={form.apellido}
                   onChange={actualizar('apellido')}
                   placeholder="García"
-                  required
                 />
+                {errores.apellido && <p className="text-xs text-red-600 mt-1">{errores.apellido}</p>}
               </div>
             </div>
 
@@ -89,9 +128,9 @@ export default function PaginaRegistro() {
                 value={form.email}
                 onChange={actualizar('email')}
                 placeholder="tu@email.com"
-                required
                 autoComplete="email"
               />
+              {errores.email && <p className="text-xs text-red-600 mt-1">{errores.email}</p>}
             </div>
 
             <div className="space-y-1">
@@ -101,9 +140,9 @@ export default function PaginaRegistro() {
                 type="tel"
                 value={form.numeroWhatsApp}
                 onChange={actualizar('numeroWhatsApp')}
-                placeholder="+5491112345678"
-                required
+                placeholder="+549XXXXXXXXXX"
               />
+              {errores.numeroWhatsApp && <p className="text-xs text-red-600 mt-1">{errores.numeroWhatsApp}</p>}
             </div>
 
             <div className="space-y-1">
@@ -115,7 +154,6 @@ export default function PaginaRegistro() {
                   value={form.contrasena}
                   onChange={actualizar('contrasena')}
                   placeholder="Mínimo 6 caracteres"
-                  required
                   autoComplete="new-password"
                   className="pr-10"
                 />
@@ -128,6 +166,7 @@ export default function PaginaRegistro() {
                   {mostrarContrasena ? <EyeOff size={16} /> : <Eye size={16} />}
                 </button>
               </div>
+              {errores.contrasena && <p className="text-xs text-red-600 mt-1">{errores.contrasena}</p>}
             </div>
           </CardContent>
 
