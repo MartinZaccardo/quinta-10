@@ -59,23 +59,23 @@ export function CalendarioDia({ canchaId, nombreCancha, tipoCancha, fecha }: Pro
         {entradas.map((entrada) => {
           if (entrada.estado !== 'DISPONIBLE') {
             const esOcupado = entrada.estado === 'OCUPADO';
+            const etiqueta = entrada.esTurnoFijo ? 'Turno fijo' : esOcupado ? 'Ocupado' : 'Pendiente';
+            const claseFondo = esOcupado
+              ? 'bg-red-50 border-l-4 border-l-red-400'
+              : 'bg-yellow-50 border-l-4 border-l-yellow-400';
+            const claseBadge = entrada.esTurnoFijo
+              ? 'bg-purple-100 text-purple-700'
+              : esOcupado
+              ? 'bg-red-100 text-red-700'
+              : 'bg-yellow-100 text-yellow-700';
             return (
-              <div
-                key={entrada.horaInicio}
-                className={`px-4 py-3 ${
-                  esOcupado
-                    ? 'bg-red-50 border-l-4 border-l-red-400'
-                    : 'bg-yellow-50 border-l-4 border-l-yellow-400'
-                }`}
-              >
+              <div key={entrada.horaInicio} className={`px-4 py-3 ${claseFondo}`}>
                 <div className="flex items-center justify-between gap-2">
                   <span className="tabular-nums text-sm font-medium text-muted-foreground">
                     {formatearRango(entrada.horaInicio, entrada.horaFin)}
                   </span>
-                  <span className={`text-xs font-medium px-2 py-0.5 rounded-full shrink-0 ${
-                    esOcupado ? 'bg-red-100 text-red-700' : 'bg-yellow-100 text-yellow-700'
-                  }`}>
-                    {esOcupado ? 'Ocupado' : 'Pendiente'}
+                  <span className={`text-xs font-medium px-2 py-0.5 rounded-full shrink-0 ${claseBadge}`}>
+                    {etiqueta}
                   </span>
                 </div>
                 {entrada.contacto && (

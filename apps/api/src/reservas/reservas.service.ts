@@ -21,6 +21,7 @@ export interface BloqueHorario {
   estado: EstadoBloque;
   contacto?: string;
   telefono?: string;
+  esTurnoFijo?: boolean;
 }
 
 type ConfigHoraria = { horaApertura: number; horaCierre: number };
@@ -266,23 +267,26 @@ export class ReservasService {
         continue;
       }
 
+      const turnoFijoSolapado = turnosFijos.find(t => superposicion(inicio, fin, t.horaInicio, t.horaFin));
+
+      if (turnoFijoSolapado) {
+        const contacto = turnoFijoSolapado.usuario
+          ? `${turnoFijoSolapado.usuario.nombre} ${turnoFijoSolapado.usuario.apellido}`
+          : undefined;
+        const telefono = turnoFijoSolapado.usuario?.numeroWhatsApp;
+        bloques.push({ horaInicio: inicio, horaFin: fin, estado: 'OCUPADO', contacto, telefono, esTurnoFijo: true });
+        continue;
+      }
+
       const reservaPendiente = reservas.find(
         r => r.estado === EstadoReserva.PENDIENTE && superposicion(inicio, fin, r.horaInicio, r.horaFin),
       );
-      const turnoFijoSolapado = turnosFijos.find(t => superposicion(inicio, fin, t.horaInicio, t.horaFin));
 
-      if (reservaPendiente || turnoFijoSolapado) {
-        let contacto: string | undefined;
-        let telefono: string | undefined;
-        if (reservaPendiente) {
-          contacto = reservaPendiente.usuario
-            ? `${reservaPendiente.usuario.nombre} ${reservaPendiente.usuario.apellido}`
-            : (reservaPendiente.nombreContacto ?? undefined);
-          telefono = reservaPendiente.usuario?.numeroWhatsApp ?? reservaPendiente.telefonoContacto ?? undefined;
-        } else if (turnoFijoSolapado?.usuario) {
-          contacto = `${turnoFijoSolapado.usuario.nombre} ${turnoFijoSolapado.usuario.apellido}`;
-          telefono = turnoFijoSolapado.usuario.numeroWhatsApp;
-        }
+      if (reservaPendiente) {
+        const contacto = reservaPendiente.usuario
+          ? `${reservaPendiente.usuario.nombre} ${reservaPendiente.usuario.apellido}`
+          : (reservaPendiente.nombreContacto ?? undefined);
+        const telefono = reservaPendiente.usuario?.numeroWhatsApp ?? reservaPendiente.telefonoContacto ?? undefined;
         bloques.push({ horaInicio: inicio, horaFin: fin, estado: 'PENDIENTE', contacto, telefono });
         continue;
       }
