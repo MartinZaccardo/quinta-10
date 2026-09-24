@@ -55,6 +55,7 @@ async function main() {
       nombre: "Pádel",
       tipo: TipoCancha.PADEL,
       precioPorHora: 20000,
+      intervaloMinutos: 30,
       activa: true,
     },
   });
