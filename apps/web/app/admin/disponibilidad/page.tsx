@@ -1,6 +1,8 @@
 'use client';
 
+import { Suspense } from 'react';
 import { useState } from 'react';
+import { useRouter, useSearchParams } from 'next/navigation';
 import useSWR from 'swr';
 import { swrFetcher } from '@/lib/api';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -15,6 +17,8 @@ interface Cancha {
   activa: boolean;
 }
 
+const STORAGE_KEY = 'admin-disponibilidad-fecha';
+
 function fechaHoy(): string {
   const hoy = new Date();
   const anio = hoy.getFullYear();
@@ -23,9 +27,28 @@ function fechaHoy(): string {
   return `${anio}-${mes}-${dia}`;
 }
 
-export default function PaginaDisponibilidad() {
-  const [fecha, setFecha] = useState(fechaHoy());
+function ContenidoDisponibilidad() {
+  const router = useRouter();
+  const searchParams = useSearchParams();
+
+  const [fecha, setFecha] = useState<string>(() => {
+    const desdeUrl = searchParams.get('fecha');
+    if (desdeUrl) return desdeUrl;
+    if (typeof window !== 'undefined') {
+      return sessionStorage.getItem(STORAGE_KEY) ?? fechaHoy();
+    }
+    return fechaHoy();
+  });
+
   const { data: canchas, isLoading, error } = useSWR<Cancha[]>('/canchas', swrFetcher);
+
+  function cambiarFecha(nuevaFecha: string) {
+    setFecha(nuevaFecha);
+    sessionStorage.setItem(STORAGE_KEY, nuevaFecha);
+    const params = new URLSearchParams(searchParams.toString());
+    params.set('fecha', nuevaFecha);
+    router.replace(`/admin/disponibilidad?${params.toString()}`);
+  }
 
   if (isLoading) {
     return <div className="p-6 text-muted-foreground text-sm">Cargando canchas...</div>;
@@ -48,7 +71,7 @@ export default function PaginaDisponibilidad() {
         <input
           type="date"
           value={fecha}
-          onChange={(e) => setFecha(e.target.value)}
+          onChange={(e) => cambiarFecha(e.target.value)}
           className="border rounded-md px-3 py-1.5 text-sm bg-white"
         />
       </div>
@@ -74,5 +97,13 @@ export default function PaginaDisponibilidad() {
         ))}
       </Tabs>
     </div>
+  );
+}
+
+export default function PaginaDisponibilidad() {
+  return (
+    <Suspense fallback={<div className="p-6 text-muted-foreground text-sm">Cargando...</div>}>
+      <ContenidoDisponibilidad />
+    </Suspense>
   );
 }

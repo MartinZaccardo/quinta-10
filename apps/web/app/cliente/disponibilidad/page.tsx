@@ -14,14 +14,29 @@ interface Cancha {
   activa: boolean;
 }
 
+const STORAGE_KEY = 'cliente-disponibilidad-fecha';
+
 function fechaHoy(): string {
   const hoy = new Date();
   return `${hoy.getFullYear()}-${String(hoy.getMonth() + 1).padStart(2, '0')}-${String(hoy.getDate()).padStart(2, '0')}`;
 }
 
+function fechaInicial(): string {
+  if (typeof window !== 'undefined') {
+    const guardada = sessionStorage.getItem(STORAGE_KEY);
+    if (guardada && guardada >= fechaHoy()) return guardada;
+  }
+  return fechaHoy();
+}
+
 export default function PaginaDisponibilidadCliente() {
-  const [fecha, setFecha] = useState(fechaHoy());
+  const [fecha, setFecha] = useState<string>(fechaInicial);
   const { data: canchas, isLoading, error } = useSWR<Cancha[]>('/canchas', swrFetcher);
+
+  function cambiarFecha(nuevaFecha: string) {
+    setFecha(nuevaFecha);
+    sessionStorage.setItem(STORAGE_KEY, nuevaFecha);
+  }
 
   if (isLoading) {
     return <div className="p-6 text-muted-foreground text-sm">Cargando canchas...</div>;
@@ -44,7 +59,7 @@ export default function PaginaDisponibilidadCliente() {
           type="date"
           value={fecha}
           min={fechaHoy()}
-          onChange={(e) => setFecha(e.target.value)}
+          onChange={(e) => cambiarFecha(e.target.value)}
           className="border rounded-md px-3 py-1.5 text-sm bg-white"
         />
       </div>
