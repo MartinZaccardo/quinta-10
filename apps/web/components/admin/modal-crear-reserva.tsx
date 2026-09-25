@@ -16,6 +16,8 @@ type Modo = 'registrado' | 'externo';
 
 interface Usuario { id: string; nombre: string; apellido: string }
 
+interface RespuestaUsuarios { datos: Usuario[] }
+
 interface Props {
   canchaId: string;
   nombreCancha: string;
@@ -30,7 +32,8 @@ interface Props {
 export function ModalCrearReserva({
   canchaId, nombreCancha, fecha, horaInicio, horaFin, abierto, onCerrar, onCreada,
 }: Props) {
-  const { data: usuarios } = useSWR<Usuario[]>('/usuarios', swrFetcher);
+  const { data: respuesta } = useSWR<RespuestaUsuarios>('/usuarios?limite=1000', swrFetcher);
+  const usuarios = respuesta?.datos;
 
   const [modo, setModo]         = useState<Modo>('registrado');
   const [usuarioId, setUsuarioId] = useState('');
