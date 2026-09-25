@@ -27,6 +27,13 @@ export class ReservasController {
     return this.reservas.listarPropias(usuario.sub);
   }
 
+  @Get('pendientes/count')
+  @UseGuards(JwtGuard, RolesGuard)
+  @Roles(RolUsuario.ADMINISTRADOR)
+  contarPendientes() {
+    return this.reservas.contarPendientes();
+  }
+
   @Get()
   @UseGuards(JwtGuard, RolesGuard)
   @Roles(RolUsuario.ADMINISTRADOR)

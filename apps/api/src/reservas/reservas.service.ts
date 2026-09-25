@@ -239,6 +239,13 @@ export class ReservasService {
     });
   }
 
+  async contarPendientes(): Promise<{ total: number }> {
+    const total = await this.prisma.db.reserva.count({
+      where: { estado: EstadoReserva.PENDIENTE },
+    });
+    return { total };
+  }
+
   listarPropias(usuarioId: string) {
     return this.prisma.db.reserva.findMany({
       where: { usuarioId },
