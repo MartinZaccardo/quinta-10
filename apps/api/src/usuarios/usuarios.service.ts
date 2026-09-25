@@ -1,6 +1,7 @@
 import { Injectable, NotFoundException, ConflictException } from '@nestjs/common';
 import bcrypt from 'bcryptjs';
 import { PrismaService } from '../prisma/prisma.service';
+import { Prisma } from '../generated/prisma/client';
 import { CrearUsuarioDto } from './dto/crear-usuario.dto';
 import { ActualizarUsuarioDto } from './dto/actualizar-usuario.dto';
 
@@ -21,11 +22,33 @@ const CAMPOS_SEGUROS = {
 export class UsuariosService {
   constructor(private readonly prisma: PrismaService) {}
 
-  listar() {
-    return this.prisma.db.usuario.findMany({
-      select: CAMPOS_SEGUROS,
-      orderBy: { nombre: 'asc' },
-    });
+  async listar(params: { busqueda?: string; pagina?: number; limite?: number } = {}) {
+    const { busqueda = '', pagina = 1, limite = 10 } = params;
+    const skip = (pagina - 1) * limite;
+
+    const where: Prisma.UsuarioWhereInput = busqueda
+      ? {
+          OR: [
+            { nombre:        { contains: busqueda, mode: 'insensitive' } },
+            { apellido:      { contains: busqueda, mode: 'insensitive' } },
+            { email:         { contains: busqueda, mode: 'insensitive' } },
+            { numeroWhatsApp:{ contains: busqueda } },
+          ],
+        }
+      : {};
+
+    const [datos, total] = await Promise.all([
+      this.prisma.db.usuario.findMany({
+        where,
+        select: CAMPOS_SEGUROS,
+        orderBy: { nombre: 'asc' },
+        skip,
+        take: limite,
+      }),
+      this.prisma.db.usuario.count({ where }),
+    ]);
+
+    return { datos, total, pagina, totalPaginas: Math.ceil(total / limite) };
   }
 
   async obtener(id: string) {

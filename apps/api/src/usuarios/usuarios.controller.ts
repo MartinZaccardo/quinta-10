@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Patch, Body, Param, UseGuards } from '@nestjs/common';
+import { Controller, Get, Post, Patch, Body, Param, Query, UseGuards } from '@nestjs/common';
 import { UsuariosService } from './usuarios.service';
 import { CrearUsuarioDto } from './dto/crear-usuario.dto';
 import { ActualizarUsuarioDto } from './dto/actualizar-usuario.dto';
@@ -14,8 +14,16 @@ export class UsuariosController {
   constructor(private readonly usuarios: UsuariosService) {}
 
   @Get()
-  listar() {
-    return this.usuarios.listar();
+  listar(
+    @Query('busqueda') busqueda?: string,
+    @Query('pagina')   pagina?:   string,
+    @Query('limite')   limite?:   string,
+  ) {
+    return this.usuarios.listar({
+      busqueda,
+      pagina: pagina  ? parseInt(pagina,  10) : undefined,
+      limite: limite  ? parseInt(limite,  10) : undefined,
+    });
   }
 
   @Get(':id')
