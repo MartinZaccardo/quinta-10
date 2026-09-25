@@ -12,6 +12,7 @@ const NAV = [
   { href: '/admin/reservas',       label: 'Reservas' },
   { href: '/admin/turnos-fijos',   label: 'Turnos fijos' },
   { href: '/admin/usuarios',       label: 'Usuarios' },
+  { href: '/admin/horarios',       label: 'Horarios' },
 ];
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
