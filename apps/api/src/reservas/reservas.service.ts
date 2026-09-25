@@ -22,10 +22,13 @@ export interface BloqueHorario {
   contacto?: string;
   telefono?: string;
   esTurnoFijo?: boolean;
+  reservaId?: string;
+  cantidadPendientes?: number;
 }
 
 type ConfigHoraria = { horaApertura: number; horaCierre: number };
 type ReservaConEstado = {
+  id: string;
   estado: EstadoReserva;
   horaInicio: number;
   horaFin: number;
@@ -58,6 +61,7 @@ export class ReservasService {
       this.prisma.db.reserva.findMany({
         where: { canchaId: dto.canchaId, fechaReserva: fecha, estado: { not: EstadoReserva.CANCELADA } },
         select: {
+          id: true,
           estado: true,
           horaInicio: true,
           horaFin: true,
@@ -278,16 +282,25 @@ export class ReservasService {
         continue;
       }
 
-      const reservaPendiente = reservas.find(
+      const pendientes = reservas.filter(
         r => r.estado === EstadoReserva.PENDIENTE && superposicion(inicio, fin, r.horaInicio, r.horaFin),
       );
 
-      if (reservaPendiente) {
+      if (pendientes.length > 0) {
+        const reservaPendiente = pendientes[0];
         const contacto = reservaPendiente.usuario
           ? `${reservaPendiente.usuario.nombre} ${reservaPendiente.usuario.apellido}`
           : (reservaPendiente.nombreContacto ?? undefined);
         const telefono = reservaPendiente.usuario?.numeroWhatsApp ?? reservaPendiente.telefonoContacto ?? undefined;
-        bloques.push({ horaInicio: inicio, horaFin: fin, estado: 'PENDIENTE', contacto, telefono });
+        bloques.push({
+          horaInicio: inicio,
+          horaFin: fin,
+          estado: 'PENDIENTE',
+          contacto,
+          telefono,
+          reservaId: reservaPendiente.id,
+          cantidadPendientes: pendientes.length,
+        });
         continue;
       }
 

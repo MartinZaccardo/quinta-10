@@ -9,6 +9,8 @@ export interface BloqueHorario {
   contacto?: string;
   telefono?: string;
   esTurnoFijo?: boolean;
+  reservaId?: string;
+  cantidadPendientes?: number;
 }
 
 export const DURACIONES_POR_TIPO: Record<TipoCancha, { minutos: number; etiqueta: string }[]> = {

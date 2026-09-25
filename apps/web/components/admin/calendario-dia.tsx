@@ -3,9 +3,11 @@
 import { useState } from 'react';
 import useSWR from 'swr';
 import { swrFetcher } from '@/lib/api';
+import api from '@/lib/api';
 import { formatearRango, minutosAHora } from '@/lib/tiempo';
 import { type TipoCancha, type BloqueHorario, DURACIONES_POR_TIPO, agruparNoDisponibles, esDuracionValida } from '@/lib/canchas';
 import { ModalCrearReserva } from './modal-crear-reserva';
+import { toast } from 'sonner';
 
 interface Props {
   canchaId: string;
@@ -23,6 +25,33 @@ export function CalendarioDia({ canchaId, nombreCancha, tipoCancha, fecha }: Pro
   const [horaInicioSeleccionada, setHoraInicioSeleccionada] = useState<number | null>(null);
   const [duracionSeleccionada, setDuracionSeleccionada] = useState<number | null>(null);
   const [modalAbierto, setModalAbierto] = useState(false);
+  const [cargandoAccion, setCargandoAccion] = useState<string | null>(null);
+
+  async function confirmarReserva(reservaId: string) {
+    setCargandoAccion(reservaId);
+    try {
+      await api.patch(`/reservas/${reservaId}/confirmar`);
+      toast.success('Reserva confirmada');
+      mutate();
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : 'Error al confirmar');
+    } finally {
+      setCargandoAccion(null);
+    }
+  }
+
+  async function rechazarReserva(reservaId: string) {
+    setCargandoAccion(reservaId + '-rechazar');
+    try {
+      await api.patch(`/reservas/${reservaId}/cancelar`);
+      toast.success('Reserva rechazada');
+      mutate();
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : 'Error al rechazar');
+    } finally {
+      setCargandoAccion(null);
+    }
+  }
 
   if (isLoading) {
     return <div className="py-10 text-center text-muted-foreground text-sm">Cargando horarios...</div>;
@@ -68,6 +97,7 @@ export function CalendarioDia({ canchaId, nombreCancha, tipoCancha, fecha }: Pro
               : esOcupado
               ? 'bg-red-100 text-red-700'
               : 'bg-yellow-100 text-yellow-700';
+            const esPendiente = entrada.estado === 'PENDIENTE';
             return (
               <div key={entrada.horaInicio} className={`px-4 py-3 ${claseFondo}`}>
                 <div className="flex items-center justify-between gap-2">
@@ -85,6 +115,29 @@ export function CalendarioDia({ canchaId, nombreCancha, tipoCancha, fecha }: Pro
                   <p className="text-xs text-gray-500 mt-0.5">
                     <span className="font-medium">Teléfono:</span> {entrada.telefono}
                   </p>
+                )}
+                {esPendiente && entrada.cantidadPendientes !== undefined && entrada.cantidadPendientes > 1 && (
+                  <p className="text-xs text-yellow-700 mt-0.5">
+                    +{entrada.cantidadPendientes - 1} más en espera
+                  </p>
+                )}
+                {esPendiente && entrada.reservaId && (
+                  <div className="flex gap-2 mt-2">
+                    <button
+                      disabled={cargandoAccion !== null}
+                      onClick={() => confirmarReserva(entrada.reservaId!)}
+                      className="px-3 py-1 text-xs font-medium rounded-md bg-green-600 text-white hover:bg-green-700 disabled:opacity-50 transition-colors"
+                    >
+                      {cargandoAccion === entrada.reservaId ? 'Confirmando...' : 'Confirmar'}
+                    </button>
+                    <button
+                      disabled={cargandoAccion !== null}
+                      onClick={() => rechazarReserva(entrada.reservaId!)}
+                      className="px-3 py-1 text-xs font-medium rounded-md bg-white text-red-600 border border-red-300 hover:bg-red-50 disabled:opacity-50 transition-colors"
+                    >
+                      {cargandoAccion === entrada.reservaId + '-rechazar' ? 'Rechazando...' : 'Rechazar'}
+                    </button>
+                  </div>
                 )}
               </div>
             );
