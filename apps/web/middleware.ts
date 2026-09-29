@@ -10,20 +10,21 @@ function rolDelToken(token: string): string | null {
 }
 
 export function middleware(request: NextRequest) {
+  const { pathname } = request.nextUrl;
   const token = request.cookies.get("token")?.value;
 
-  if (!token) {
-    return NextResponse.redirect(new URL("/login", request.url));
-  }
-
-  // Si un usuario autenticado va al login o registro, mandarlo a su panel
-  const { pathname } = request.nextUrl;
-  if (pathname === "/login" || pathname === "/registro") {
+  // Usuario autenticado que va al login/registro → mandarlo a su panel
+  if (token && (pathname === "/login" || pathname === "/registro")) {
     const destino =
       rolDelToken(token) === "ADMINISTRADOR"
         ? "/admin/disponibilidad"
         : "/cliente/disponibilidad";
     return NextResponse.redirect(new URL(destino, request.url));
+  }
+
+  // Rutas protegidas sin token → mandar a login
+  if (!token && (pathname.startsWith("/admin") || pathname.startsWith("/cliente"))) {
+    return NextResponse.redirect(new URL("/login", request.url));
   }
 
   return NextResponse.next();

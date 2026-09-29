@@ -11,10 +11,10 @@ async function pedido<T>(path: string, init?: RequestInit): Promise<T> {
   });
 
   if (res.status === 401) {
-    const enRutaPublica = ['/login', '/registro'].some((r) =>
+    const enRutaProtegida = ['/admin', '/cliente'].some((r) =>
       window.location.pathname.startsWith(r),
     );
-    if (!enRutaPublica) {
+    if (enRutaProtegida) {
       window.location.href = '/login';
       throw new Error('No autorizado');
     }

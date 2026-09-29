@@ -61,10 +61,10 @@ export default function PaginaLanding() {
       {/* ── Hero ───────────────────────────────────────────────── */}
       <section className="relative min-h-screen flex items-center justify-center">
         <Image
-          src="/afuera-noche.jpeg"
-          alt="La Quinta del 10 de noche"
+          src="/cancha-f6-arco.jpeg"
+          alt="Cancha de fútbol La Quinta del 10"
           fill
-          className="object-cover"
+          className="object-cover object-[center_60%]"
           priority
         />
         <div className="absolute inset-0 bg-[#1C3A5E]/70" />
