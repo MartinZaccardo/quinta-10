@@ -30,6 +30,7 @@ const OPCIONES_HORARIO = Array.from({ length: (1560 - 540) / 30 + 1 }, (_, i) =>
 
 interface Cancha  { id: string; nombre: string }
 interface Usuario { id: string; nombre: string; apellido: string }
+interface RespuestaUsuarios { datos: Usuario[] }
 
 // ─── Modal principal ───────────────────────────────────────────────────────────
 
@@ -40,8 +41,9 @@ interface Props {
 }
 
 export function ModalCrearTurnoFijo({ abierto, onCerrar, onCreado }: Props) {
-  const { data: canchas }  = useSWR<Cancha[]>('/canchas', swrFetcher);
-  const { data: usuarios } = useSWR<Usuario[]>('/usuarios', swrFetcher);
+  const { data: canchas }   = useSWR<Cancha[]>('/canchas', swrFetcher);
+  const { data: respuesta } = useSWR<RespuestaUsuarios>('/usuarios?limite=1000', swrFetcher);
+  const usuarios = respuesta?.datos;
 
   const [canchaId,    setCanchaId]    = useState('');
   const [usuarioId,   setUsuarioId]   = useState('');

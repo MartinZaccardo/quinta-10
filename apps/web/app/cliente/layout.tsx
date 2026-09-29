@@ -27,9 +27,9 @@ export default function ClienteLayout({ children }: { children: React.ReactNode 
   return (
     <div className="min-h-screen bg-gray-50">
       <header className="bg-white border-b sticky top-0 z-10">
-        <div className="max-w-3xl mx-auto px-6 flex items-center justify-between h-14">
-          <div className="flex items-center gap-6">
-            <span className="font-semibold text-sm text-gray-900 shrink-0">La Quinta del 10</span>
+        <div className="max-w-3xl mx-auto px-4 sm:px-6 flex items-center justify-between h-14">
+          <div className="flex items-center gap-2 sm:gap-6">
+            <span className="hidden sm:block font-semibold text-sm text-gray-900 shrink-0">La Quinta del 10</span>
             <nav className="flex gap-1">
               {NAV.map(({ href, label }) => (
                 <Link
