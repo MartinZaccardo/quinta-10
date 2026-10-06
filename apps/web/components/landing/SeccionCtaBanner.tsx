@@ -11,7 +11,7 @@ export default function SeccionCtaBanner() {
           Sin llamadas, sin WhatsApp. Tu cancha reservada en segundos, las 24 horas.
         </p>
         <Link
-          href="/cliente/disponibilidad"
+          href="/disponibilidad"
           className="inline-block bg-amber-400 hover:bg-amber-500 text-[#0F1C2E] font-bold px-10 py-4 rounded-md transition-colors text-sm tracking-wide"
         >
           Reservar ahora

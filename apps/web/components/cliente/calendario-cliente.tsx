@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { useRouter } from 'next/navigation';
 import useSWR from 'swr';
 import { swrFetcher } from '@/lib/api';
 import { formatearRango, minutosAHora } from '@/lib/tiempo';
@@ -20,14 +21,19 @@ interface Props {
   nombreCancha: string;
   tipoCancha: TipoCancha;
   fecha: string;
+  esPublico?: boolean;
 }
 
-export function CalendarioCliente({ canchaId, nombreCancha, tipoCancha, fecha }: Props) {
+export function CalendarioCliente({ canchaId, nombreCancha, tipoCancha, fecha, esPublico = false }: Props) {
+  const router = useRouter();
   const { data: slots, isLoading, error, mutate } = useSWR<BloqueHorario[]>(
     `/reservas/slots?canchaId=${canchaId}&fecha=${fecha}`,
     swrFetcher,
   );
-  const { data: misReservas } = useSWR<MiReserva[]>('/reservas/mis-reservas', swrFetcher);
+  const { data: misReservas } = useSWR<MiReserva[]>(
+    esPublico ? null : '/reservas/mis-reservas',
+    swrFetcher,
+  );
 
   function esSlotPropio(horaInicio: number, horaFin: number): boolean {
     return (misReservas ?? []).some(
@@ -184,9 +190,12 @@ export function CalendarioCliente({ canchaId, nombreCancha, tipoCancha, fecha }:
                       </span>
                       <button
                         className="px-4 py-1.5 bg-blue-600 text-white text-sm rounded-md hover:bg-blue-700 transition-colors"
-                        onClick={() => setModalAbierto(true)}
+                        onClick={() => esPublico
+                          ? router.push('/registro?redirect=/disponibilidad')
+                          : setModalAbierto(true)
+                        }
                       >
-                        Solicitar →
+                        {esPublico ? 'Reservar →' : 'Solicitar →'}
                       </button>
                     </div>
                   )}

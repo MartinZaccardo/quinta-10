@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
+import { useSearchParams } from 'next/navigation';
 import { Eye, EyeOff } from 'lucide-react';
 import { toast } from 'sonner';
 import { useAuth } from '@/contexts/auth';
@@ -41,6 +42,8 @@ function validarForm(form: CamposForm): Record<string, string> {
 
 export default function PaginaRegistro() {
   const { registro } = useAuth();
+  const searchParams = useSearchParams();
+  const redirect = searchParams.get('redirect') ?? undefined;
   const [form, setForm] = useState<CamposForm>({
     nombre: '',
     apellido: '',
@@ -72,7 +75,7 @@ export default function PaginaRegistro() {
     setErrorGeneral('');
     setCargando(true);
     try {
-      await registro(form);
+      await registro(form, redirect);
       toast.success('Cuenta creada correctamente');
     } catch (err) {
       setErrorGeneral(err instanceof Error ? err.message : 'Error al registrarse');

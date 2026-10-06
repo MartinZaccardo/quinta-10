@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
+import { useSearchParams } from 'next/navigation';
 import { Eye, EyeOff } from 'lucide-react';
 import { useAuth } from '@/contexts/auth';
 import { Button } from '@/components/ui/button';
@@ -23,6 +24,8 @@ function validarContrasena(valor: string): string {
 
 export default function PaginaLogin() {
   const { login } = useAuth();
+  const searchParams = useSearchParams();
+  const redirect = searchParams.get('redirect') ?? undefined;
   const [email, setEmail] = useState('');
   const [contrasena, setContrasena] = useState('');
   const [mostrarContrasena, setMostrarContrasena] = useState(false);
@@ -50,7 +53,7 @@ export default function PaginaLogin() {
     setErrorGeneral('');
     setCargando(true);
     try {
-      await login(email, contrasena);
+      await login(email, contrasena, redirect);
     } catch (err) {
       setErrorGeneral(err instanceof Error ? err.message : 'Error al iniciar sesión');
     } finally {

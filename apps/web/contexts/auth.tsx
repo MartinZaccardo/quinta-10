@@ -25,8 +25,8 @@ interface AuthContextType {
   estaAutenticado: boolean;
   esAdmin: boolean;
   cargando: boolean;
-  login: (email: string, contrasena: string) => Promise<void>;
-  registro: (data: RegistroData) => Promise<void>;
+  login: (email: string, contrasena: string, redirect?: string) => Promise<void>;
+  registro: (data: RegistroData, redirect?: string) => Promise<void>;
   logout: () => Promise<void>;
 }
 
@@ -52,20 +52,24 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       .finally(() => setCargando(false));
   }, []);
 
-  function redirigirSegunRol(u: UsuarioAutenticado) {
+  function redirigirSegunRol(u: UsuarioAutenticado, redirect?: string) {
+    if (redirect && u.rol === 'CLIENTE') {
+      router.push(redirect);
+      return;
+    }
     router.push(u.rol === 'ADMINISTRADOR' ? '/admin/disponibilidad' : '/cliente/disponibilidad');
   }
 
-  async function login(email: string, contrasena: string) {
+  async function login(email: string, contrasena: string, redirect?: string) {
     const usuarioData = await api.post<UsuarioAutenticado>('/auth/login', { email, contrasena });
     setUsuario(usuarioData);
-    redirigirSegunRol(usuarioData);
+    redirigirSegunRol(usuarioData, redirect);
   }
 
-  async function registro(data: RegistroData) {
+  async function registro(data: RegistroData, redirect?: string) {
     const usuarioData = await api.post<UsuarioAutenticado>('/auth/registro', data);
     setUsuario(usuarioData);
-    redirigirSegunRol(usuarioData);
+    redirigirSegunRol(usuarioData, redirect);
   }
 
   async function logout() {

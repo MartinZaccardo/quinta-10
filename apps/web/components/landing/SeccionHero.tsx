@@ -43,7 +43,7 @@ export default function SeccionHero() {
           </p>
           <div className="flex flex-wrap gap-3 pt-1">
             <Link
-              href="/cliente/disponibilidad"
+              href="/disponibilidad"
               className="bg-amber-400 hover:bg-amber-500 text-[#0F1C2E] font-bold px-8 py-3.5 rounded-full transition-colors text-sm tracking-wide"
             >
               Ver horarios disponibles

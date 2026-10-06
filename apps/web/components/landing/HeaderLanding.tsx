@@ -64,7 +64,7 @@ export default function HeaderLanding() {
                 href="/registro"
                 className="bg-amber-400 hover:bg-amber-500 text-[#0F1C2E] font-bold text-sm px-5 py-2 rounded-md transition-colors"
               >
-                Reservar
+                Registrarse
               </Link>
             </>
           )}
