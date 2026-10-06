@@ -27,7 +27,7 @@ interface AuthContextType {
   cargando: boolean;
   login: (email: string, contrasena: string, redirect?: string) => Promise<void>;
   registro: (data: RegistroData, redirect?: string) => Promise<void>;
-  logout: () => Promise<void>;
+  logout: (redirect?: string) => Promise<void>;
 }
 
 export const AuthContext = createContext<AuthContextType>({
@@ -37,7 +37,7 @@ export const AuthContext = createContext<AuthContextType>({
   cargando: true,
   login: async () => {},
   registro: async () => {},
-  logout: async () => {},
+  logout: async (_redirect?: string) => {},
 });
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
@@ -57,7 +57,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       router.push(redirect);
       return;
     }
-    router.push(u.rol === 'ADMINISTRADOR' ? '/admin/disponibilidad' : '/cliente/disponibilidad');
+    router.push(u.rol === 'ADMINISTRADOR' ? '/admin/disponibilidad' : '/disponibilidad');
   }
 
   async function login(email: string, contrasena: string, redirect?: string) {
@@ -72,10 +72,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     redirigirSegunRol(usuarioData, redirect);
   }
 
-  async function logout() {
+  async function logout(redirect: string = '/login') {
     await api.post('/auth/logout');
     setUsuario(null);
-    router.push('/login');
+    router.push(redirect);
   }
 
   return (

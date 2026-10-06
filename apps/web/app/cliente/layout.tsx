@@ -7,7 +7,7 @@ import { useAuth } from '@/contexts/auth';
 import { Button } from '@/components/ui/button';
 
 const NAV = [
-  { href: '/cliente/disponibilidad', label: 'Disponibilidad' },
+  { href: '/disponibilidad', label: 'Disponibilidad' },
   { href: '/cliente/mis-reservas',   label: 'Mis reservas' },
 ];
 

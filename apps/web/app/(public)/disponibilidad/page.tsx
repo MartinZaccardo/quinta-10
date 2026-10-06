@@ -3,10 +3,11 @@
 import { useState } from 'react';
 import Link from 'next/link';
 import useSWR from 'swr';
-import { FaArrowLeft, FaFutbol } from 'react-icons/fa';
+import { FaArrowLeft, FaFutbol, FaSignOutAlt } from 'react-icons/fa';
 import { GiTennisBall } from 'react-icons/gi';
 import { swrFetcher } from '@/lib/api';
 import { type TipoCancha } from '@/lib/canchas';
+import { useAuth } from '@/contexts/auth';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { CalendarioCliente } from '@/components/cliente/calendario-cliente';
 
@@ -15,6 +16,8 @@ const ETIQUETA_TIPO: Record<TipoCancha, { label: string; icono: React.ReactNode 
   F6:    { label: 'Fútbol 6', icono: <FaFutbol className="w-3.5 h-3.5" /> },
   PADEL: { label: 'Pádel',    icono: <GiTennisBall className="w-3.5 h-3.5" /> },
 };
+
+const STORAGE_KEY = 'disponibilidad-fecha';
 
 interface Cancha {
   id: string;
@@ -28,11 +31,25 @@ function fechaHoy(): string {
   return `${hoy.getFullYear()}-${String(hoy.getMonth() + 1).padStart(2, '0')}-${String(hoy.getDate()).padStart(2, '0')}`;
 }
 
-export default function PaginaDisponibilidadPublica() {
-  const [fecha, setFecha] = useState<string>(fechaHoy);
+function fechaInicial(): string {
+  if (typeof window !== 'undefined') {
+    const guardada = sessionStorage.getItem(STORAGE_KEY);
+    if (guardada && guardada >= fechaHoy()) return guardada;
+  }
+  return fechaHoy();
+}
+
+export default function PaginaDisponibilidad() {
+  const { estaAutenticado, cargando: cargandoAuth, logout } = useAuth();
+  const [fecha, setFecha] = useState<string>(fechaInicial);
   const { data: canchas, isLoading, error } = useSWR<Cancha[]>('/canchas', swrFetcher);
 
   const canchasActivas = canchas?.filter((c) => c.activa) ?? [];
+
+  function cambiarFecha(nuevaFecha: string) {
+    setFecha(nuevaFecha);
+    sessionStorage.setItem(STORAGE_KEY, nuevaFecha);
+  }
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -40,14 +57,32 @@ export default function PaginaDisponibilidadPublica() {
         <div className="max-w-4xl mx-auto px-4 sm:px-8 h-16 flex items-center justify-between">
           <Link
             href="/"
-            className="text-white/60 hover:text-white text-sm transition-colors flex items-center gap-1.5"
+            className="text-white/60 hover:text-white text-sm transition-colors flex items-center gap-1.5 shrink-0"
           >
             <FaArrowLeft className="w-3.5 h-3.5" /> Inicio
           </Link>
           <span className="font-display font-black uppercase text-white text-lg tracking-wide">
             La Quinta del 10
           </span>
-          <div className="w-16" />
+          <div className="flex items-center gap-4 shrink-0">
+            {!cargandoAuth && estaAutenticado && (
+              <>
+                <Link
+                  href="/cliente/mis-reservas"
+                  className="text-white/60 hover:text-white text-sm transition-colors"
+                >
+                  Mis reservas
+                </Link>
+                <button
+                  onClick={() => logout('/')}
+                  className="flex items-center gap-1.5 text-red-400/70 hover:text-red-400 text-sm transition-colors"
+                >
+                  <FaSignOutAlt className="w-3.5 h-3.5" />
+                  Cerrar sesión
+                </button>
+              </>
+            )}
+          </div>
         </div>
       </header>
 
@@ -63,25 +98,27 @@ export default function PaginaDisponibilidadPublica() {
           </h1>
         </div>
 
-        <div className="bg-amber-50 border border-amber-200 rounded-xl px-5 py-4 mb-8 flex items-center justify-between gap-4 flex-wrap">
-          <p className="text-sm text-amber-800">
-            Para confirmar una reserva necesitás una cuenta gratuita.
-          </p>
-          <div className="flex gap-3 shrink-0">
-            <Link
-              href="/registro?redirect=/disponibilidad"
-              className="bg-amber-400 hover:bg-amber-500 text-[#0F1C2E] font-bold text-sm px-4 py-2 rounded-md transition-colors"
-            >
-              Crear cuenta
-            </Link>
-            <Link
-              href="/login?redirect=/disponibilidad"
-              className="border border-amber-300 text-amber-800 hover:bg-amber-100 text-sm px-4 py-2 rounded-md transition-colors"
-            >
-              Iniciar sesión
-            </Link>
+        {!cargandoAuth && !estaAutenticado && (
+          <div className="bg-amber-50 border border-amber-200 rounded-xl px-5 py-4 mb-8 flex items-center justify-between gap-4 flex-wrap">
+            <p className="text-sm text-amber-800">
+              Para confirmar una reserva necesitás una cuenta gratuita.
+            </p>
+            <div className="flex gap-3 shrink-0">
+              <Link
+                href="/registro?redirect=/disponibilidad"
+                className="bg-amber-400 hover:bg-amber-500 text-[#0F1C2E] font-bold text-sm px-4 py-2 rounded-md transition-colors"
+              >
+                Crear cuenta
+              </Link>
+              <Link
+                href="/login?redirect=/disponibilidad"
+                className="border border-amber-300 text-amber-800 hover:bg-amber-100 text-sm px-4 py-2 rounded-md transition-colors"
+              >
+                Iniciar sesión
+              </Link>
+            </div>
           </div>
-        </div>
+        )}
 
         {isLoading && (
           <div className="text-sm text-gray-400 py-10 text-center">Cargando canchas...</div>
@@ -100,7 +137,7 @@ export default function PaginaDisponibilidadPublica() {
                 type="date"
                 value={fecha}
                 min={fechaHoy()}
-                onChange={(e) => setFecha(e.target.value)}
+                onChange={(e) => cambiarFecha(e.target.value)}
                 className="border rounded-md px-3 py-1.5 text-sm bg-white"
               />
             </div>
@@ -122,7 +159,7 @@ export default function PaginaDisponibilidadPublica() {
                     nombreCancha={cancha.nombre}
                     tipoCancha={cancha.tipo}
                     fecha={fecha}
-                    esPublico={true}
+                    esPublico={!estaAutenticado}
                   />
                 </TabsContent>
               ))}
