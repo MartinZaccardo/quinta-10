@@ -4,12 +4,9 @@ import { useState } from 'react';
 import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
 import { Eye, EyeOff } from 'lucide-react';
+import { FaArrowLeft } from 'react-icons/fa';
 import { toast } from 'sonner';
 import { useAuth } from '@/contexts/auth';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 
 type CamposForm = {
   nombre: string;
@@ -32,7 +29,7 @@ function validarForm(form: CamposForm): Record<string, string> {
   else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email)) errores.email = 'Ingresá un email válido';
 
   if (!form.numeroWhatsApp.trim()) errores.numeroWhatsApp = 'El número de WhatsApp es requerido';
-  else if (!/^\+\d{10,15}$/.test(form.numeroWhatsApp)) errores.numeroWhatsApp = 'Formato requerido: +549XXXXXXXXXX';
+  else if (!/^\+\d{10,15}$/.test(form.numeroWhatsApp)) errores.numeroWhatsApp = 'Formato: +549XXXXXXXXXX';
 
   if (!form.contrasena) errores.contrasena = 'La contraseña es requerida';
   else if (form.contrasena.length < 6) errores.contrasena = 'Mínimo 6 caracteres';
@@ -85,107 +82,130 @@ export default function PaginaRegistro() {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-slate-50 p-4">
-      <Card className="w-full max-w-sm">
-        <CardHeader className="text-center">
-          <CardTitle className="text-2xl">La Quinta del 10</CardTitle>
-          <CardDescription>Creá tu cuenta para reservar</CardDescription>
-        </CardHeader>
+    <div className="min-h-screen bg-[#0F1C2E] flex flex-col">
+      <div className="p-6">
+        <Link
+          href="/"
+          className="text-white/40 hover:text-white/70 text-sm transition-colors flex items-center gap-1.5 w-fit"
+        >
+          <FaArrowLeft className="w-3 h-3" /> Inicio
+        </Link>
+      </div>
 
-        <form onSubmit={manejarSubmit} noValidate>
-          <CardContent className="space-y-4">
-            {errorGeneral && (
-              <p className="text-sm text-red-600 bg-red-50 border border-red-200 rounded-md px-3 py-2">
-                {errorGeneral}
-              </p>
-            )}
+      <div className="flex-1 flex items-center justify-center px-4 py-8">
+        <div className="w-full max-w-md">
+          <div className="text-center mb-8">
+            <h1 className="font-display font-black uppercase text-white text-3xl tracking-wide">
+              La Quinta del 10
+            </h1>
+            <p className="text-white/40 text-sm mt-1">Creá tu cuenta para reservar</p>
+          </div>
 
-            <div className="grid grid-cols-2 gap-3">
-              <div className="space-y-1">
-                <Label htmlFor="nombre">Nombre</Label>
-                <Input
-                  id="nombre"
-                  value={form.nombre}
-                  onChange={actualizar('nombre')}
-                  placeholder="Juan"
-                />
-                {errores.nombre && <p className="text-xs text-red-600 mt-1">{errores.nombre}</p>}
+          <form onSubmit={manejarSubmit} noValidate>
+            <div className="bg-white/5 border border-white/10 rounded-2xl p-6 space-y-4">
+              {errorGeneral && (
+                <p className="text-sm text-red-400 bg-red-500/10 border border-red-500/20 rounded-lg px-3 py-2">
+                  {errorGeneral}
+                </p>
+              )}
+
+              <div className="grid grid-cols-2 gap-3">
+                <div className="space-y-1.5">
+                  <label htmlFor="nombre" className="text-white/60 text-sm">Nombre</label>
+                  <input
+                    id="nombre"
+                    value={form.nombre}
+                    onChange={actualizar('nombre')}
+                    placeholder="Juan"
+                    className="w-full bg-white/10 border border-white/20 rounded-lg px-3 py-2.5 text-sm text-white placeholder:text-white/30 focus:outline-none focus:border-amber-400 transition-colors"
+                  />
+                  {errores.nombre && <p className="text-xs text-red-400">{errores.nombre}</p>}
+                </div>
+                <div className="space-y-1.5">
+                  <label htmlFor="apellido" className="text-white/60 text-sm">Apellido</label>
+                  <input
+                    id="apellido"
+                    value={form.apellido}
+                    onChange={actualizar('apellido')}
+                    placeholder="García"
+                    className="w-full bg-white/10 border border-white/20 rounded-lg px-3 py-2.5 text-sm text-white placeholder:text-white/30 focus:outline-none focus:border-amber-400 transition-colors"
+                  />
+                  {errores.apellido && <p className="text-xs text-red-400">{errores.apellido}</p>}
+                </div>
               </div>
-              <div className="space-y-1">
-                <Label htmlFor="apellido">Apellido</Label>
-                <Input
-                  id="apellido"
-                  value={form.apellido}
-                  onChange={actualizar('apellido')}
-                  placeholder="García"
+
+              <div className="space-y-1.5">
+                <label htmlFor="email" className="text-white/60 text-sm">Email</label>
+                <input
+                  id="email"
+                  type="email"
+                  value={form.email}
+                  onChange={actualizar('email')}
+                  placeholder="tu@email.com"
+                  autoComplete="email"
+                  className="w-full bg-white/10 border border-white/20 rounded-lg px-3 py-2.5 text-sm text-white placeholder:text-white/30 focus:outline-none focus:border-amber-400 transition-colors"
                 />
-                {errores.apellido && <p className="text-xs text-red-600 mt-1">{errores.apellido}</p>}
+                {errores.email && <p className="text-xs text-red-400">{errores.email}</p>}
               </div>
-            </div>
 
-            <div className="space-y-1">
-              <Label htmlFor="email">Email</Label>
-              <Input
-                id="email"
-                type="email"
-                value={form.email}
-                onChange={actualizar('email')}
-                placeholder="tu@email.com"
-                autoComplete="email"
-              />
-              {errores.email && <p className="text-xs text-red-600 mt-1">{errores.email}</p>}
-            </div>
-
-            <div className="space-y-1">
-              <Label htmlFor="whatsapp">WhatsApp</Label>
-              <Input
-                id="whatsapp"
-                type="tel"
-                value={form.numeroWhatsApp}
-                onChange={actualizar('numeroWhatsApp')}
-                placeholder="+549XXXXXXXXXX"
-              />
-              {errores.numeroWhatsApp && <p className="text-xs text-red-600 mt-1">{errores.numeroWhatsApp}</p>}
-            </div>
-
-            <div className="space-y-1">
-              <Label htmlFor="contrasena">Contraseña</Label>
-              <div className="relative">
-                <Input
-                  id="contrasena"
-                  type={mostrarContrasena ? 'text' : 'password'}
-                  value={form.contrasena}
-                  onChange={actualizar('contrasena')}
-                  placeholder="Mínimo 6 caracteres"
-                  autoComplete="new-password"
-                  className="pr-10"
+              <div className="space-y-1.5">
+                <label htmlFor="whatsapp" className="text-white/60 text-sm">WhatsApp</label>
+                <input
+                  id="whatsapp"
+                  type="tel"
+                  value={form.numeroWhatsApp}
+                  onChange={actualizar('numeroWhatsApp')}
+                  placeholder="+549XXXXXXXXXX"
+                  className="w-full bg-white/10 border border-white/20 rounded-lg px-3 py-2.5 text-sm text-white placeholder:text-white/30 focus:outline-none focus:border-amber-400 transition-colors"
                 />
-                <button
-                  type="button"
-                  onClick={() => setMostrarContrasena(v => !v)}
-                  className="absolute inset-y-0 right-0 flex items-center px-3 text-muted-foreground hover:text-foreground"
-                  tabIndex={-1}
-                >
-                  {mostrarContrasena ? <EyeOff size={16} /> : <Eye size={16} />}
-                </button>
+                {errores.numeroWhatsApp && <p className="text-xs text-red-400">{errores.numeroWhatsApp}</p>}
               </div>
-              {errores.contrasena && <p className="text-xs text-red-600 mt-1">{errores.contrasena}</p>}
-            </div>
-          </CardContent>
 
-          <CardFooter className="flex flex-col gap-3">
-            <Button type="submit" className="w-full" disabled={cargando}>
-              {cargando ? 'Creando cuenta...' : 'Crear cuenta'}
-            </Button>
-            <p className="text-sm text-muted-foreground text-center">
-              ¿Ya tenés cuenta?{' '}
-              <Link href="/login" className="text-primary underline-offset-4 hover:underline">
-                Iniciá sesión
-              </Link>
-            </p>
-          </CardFooter>
-        </form>
-      </Card>
+              <div className="space-y-1.5">
+                <label htmlFor="contrasena" className="text-white/60 text-sm">Contraseña</label>
+                <div className="relative">
+                  <input
+                    id="contrasena"
+                    type={mostrarContrasena ? 'text' : 'password'}
+                    value={form.contrasena}
+                    onChange={actualizar('contrasena')}
+                    placeholder="Mínimo 6 caracteres"
+                    autoComplete="new-password"
+                    className="w-full bg-white/10 border border-white/20 rounded-lg px-3 py-2.5 pr-10 text-sm text-white placeholder:text-white/30 focus:outline-none focus:border-amber-400 transition-colors"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setMostrarContrasena(v => !v)}
+                    className="absolute inset-y-0 right-0 flex items-center px-3 text-white/30 hover:text-white/60 transition-colors"
+                    tabIndex={-1}
+                  >
+                    {mostrarContrasena ? <EyeOff size={16} /> : <Eye size={16} />}
+                  </button>
+                </div>
+                {errores.contrasena && <p className="text-xs text-red-400">{errores.contrasena}</p>}
+              </div>
+
+              <button
+                type="submit"
+                disabled={cargando}
+                className="w-full bg-amber-400 hover:bg-amber-500 disabled:opacity-60 text-[#0F1C2E] font-bold py-3 rounded-lg transition-colors text-sm mt-2"
+              >
+                {cargando ? 'Creando cuenta...' : 'Crear cuenta'}
+              </button>
+            </div>
+          </form>
+
+          <p className="text-white/40 text-sm text-center mt-6">
+            ¿Ya tenés cuenta?{' '}
+            <Link
+              href={redirect ? `/login?redirect=${redirect}` : '/login'}
+              className="text-amber-400 hover:text-amber-300 transition-colors"
+            >
+              Iniciá sesión
+            </Link>
+          </p>
+        </div>
+      </div>
     </div>
   );
 }

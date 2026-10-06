@@ -46,7 +46,7 @@ export default function ClienteLayout({ children }: { children: React.ReactNode 
               ))}
             </nav>
           </div>
-          <Button variant="ghost" size="sm" onClick={logout} className="text-gray-500">
+          <Button variant="ghost" size="sm" onClick={() => logout()} className="text-gray-500">
             Salir
           </Button>
         </div>

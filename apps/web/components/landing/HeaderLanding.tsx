@@ -16,9 +16,7 @@ export default function HeaderLanding() {
   const { estaAutenticado, esAdmin, cargando } = useAuth();
   const [menuAbierto, setMenuAbierto] = useState(false);
 
-  const panelUrl = esAdmin
-    ? "/admin/disponibilidad"
-    : "/cliente/disponibilidad";
+  const panelUrl = esAdmin ? "/admin/disponibilidad" : "/disponibilidad";
 
   return (
     <header className="fixed top-0 left-0 right-0 z-50 bg-[#0F1C2E]/95 backdrop-blur-sm">
