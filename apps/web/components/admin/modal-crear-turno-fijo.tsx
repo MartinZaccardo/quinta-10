@@ -100,7 +100,7 @@ export function ModalCrearTurnoFijo({ abierto, onCerrar, onCreado }: Props) {
     <Dialog open={abierto} onOpenChange={(open) => !open && cerrar()}>
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
-          <DialogTitle>Nuevo turno fijo</DialogTitle>
+          <DialogTitle className="font-display font-black uppercase text-[#0F1C2E] text-xl">Nuevo turno fijo</DialogTitle>
         </DialogHeader>
 
         <form onSubmit={manejarSubmit} className="space-y-4">
@@ -173,7 +173,7 @@ export function ModalCrearTurnoFijo({ abierto, onCerrar, onCreado }: Props) {
 
           <DialogFooter>
             <Button type="button" variant="outline" onClick={cerrar} disabled={cargando}>Cancelar</Button>
-            <Button type="submit" disabled={cargando}>{cargando ? 'Guardando...' : 'Crear turno fijo'}</Button>
+            <Button type="submit" disabled={cargando} className="bg-amber-400 hover:bg-amber-500 text-[#0F1C2E] font-bold border-0">{cargando ? 'Guardando...' : 'Crear turno fijo'}</Button>
           </DialogFooter>
         </form>
       </DialogContent>

@@ -79,8 +79,9 @@ export default function PaginaHorarios() {
   return (
     <div className="p-4 sm:p-6 space-y-4 sm:space-y-6">
       <div>
-        <h1 className="text-2xl font-semibold">Horarios</h1>
-        <p className="text-sm text-muted-foreground mt-1">
+        <p className="text-sky-400 text-xs font-bold tracking-[0.2em] uppercase mb-1">Configuración del predio</p>
+        <h1 className="font-display font-black uppercase text-[#0F1C2E] text-4xl sm:text-5xl leading-none">Horarios</h1>
+        <p className="text-sm text-muted-foreground mt-2">
           Apertura y cierre del predio por día de la semana. Para cierres después de medianoche ingresá la hora del día siguiente (ej: 02:00).
         </p>
       </div>
@@ -117,6 +118,7 @@ export default function PaginaHorarios() {
                       size="sm"
                       disabled={guardando}
                       onClick={() => guardar(horario.diaSemana)}
+                      className="bg-amber-400 hover:bg-amber-500 text-[#0F1C2E] font-bold border-0"
                     >
                       {guardando ? 'Guardando...' : 'Guardar'}
                     </Button>

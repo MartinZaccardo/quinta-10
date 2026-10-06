@@ -70,7 +70,7 @@ function ModalAsignarAcceso({
     <Dialog open onOpenChange={(open) => !open && onCerrar()}>
       <DialogContent className="sm:max-w-sm">
         <DialogHeader>
-          <DialogTitle>Asignar acceso</DialogTitle>
+          <DialogTitle className="font-display font-black uppercase text-[#0F1C2E] text-xl">Asignar acceso</DialogTitle>
         </DialogHeader>
 
         <p className="text-sm text-muted-foreground">
@@ -130,7 +130,7 @@ function ModalAsignarAcceso({
             >
               Cancelar
             </Button>
-            <Button type="submit" disabled={cargando}>
+            <Button type="submit" disabled={cargando} className="bg-amber-400 hover:bg-amber-500 text-[#0F1C2E] font-bold border-0">
               {cargando ? "Guardando..." : "Guardar"}
             </Button>
           </DialogFooter>
@@ -191,8 +191,11 @@ export default function PaginaUsuarios() {
   return (
     <div className="p-4 sm:p-6 space-y-4 sm:space-y-6">
       <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-semibold">Usuarios</h1>
-        <Button onClick={() => setModalNuevoAbierto(true)}>
+        <div>
+          <p className="text-sky-400 text-xs font-bold tracking-[0.2em] uppercase mb-1">Base de clientes</p>
+          <h1 className="font-display font-black uppercase text-[#0F1C2E] text-4xl sm:text-5xl leading-none">Usuarios</h1>
+        </div>
+        <Button onClick={() => setModalNuevoAbierto(true)} className="bg-amber-400 hover:bg-amber-500 text-[#0F1C2E] font-bold border-0 shrink-0">
           + Nuevo usuario
         </Button>
       </div>

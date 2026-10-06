@@ -83,7 +83,7 @@ export function ModalCrearReserva({
     <Dialog open={abierto} onOpenChange={(open) => !open && onCerrar()}>
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
-          <DialogTitle>Nueva reserva</DialogTitle>
+          <DialogTitle className="font-display font-black uppercase text-[#0F1C2E] text-xl">Nueva reserva</DialogTitle>
         </DialogHeader>
 
         <div className="text-sm text-muted-foreground space-y-0.5 pb-2">
@@ -98,8 +98,8 @@ export function ModalCrearReserva({
             onClick={() => cambiarModo('registrado')}
             className={`flex-1 py-2 transition-colors ${
               modo === 'registrado'
-                ? 'bg-primary text-primary-foreground font-medium'
-                : 'text-muted-foreground hover:bg-muted'
+                ? 'bg-amber-400 text-[#0F1C2E] font-medium'
+                : 'text-gray-500 hover:bg-gray-50'
             }`}
           >
             Cliente registrado
@@ -109,8 +109,8 @@ export function ModalCrearReserva({
             onClick={() => cambiarModo('externo')}
             className={`flex-1 py-2 transition-colors ${
               modo === 'externo'
-                ? 'bg-primary text-primary-foreground font-medium'
-                : 'text-muted-foreground hover:bg-muted'
+                ? 'bg-amber-400 text-[#0F1C2E] font-medium'
+                : 'text-gray-500 hover:bg-gray-50'
             }`}
           >
             Sin cuenta
@@ -156,7 +156,7 @@ export function ModalCrearReserva({
             <Button type="button" variant="outline" onClick={onCerrar} disabled={cargando}>
               Cancelar
             </Button>
-            <Button type="submit" disabled={cargando}>
+            <Button type="submit" disabled={cargando} className="bg-amber-400 hover:bg-amber-500 text-[#0F1C2E] font-bold border-0">
               {cargando ? 'Reservando...' : 'Confirmar reserva'}
             </Button>
           </DialogFooter>

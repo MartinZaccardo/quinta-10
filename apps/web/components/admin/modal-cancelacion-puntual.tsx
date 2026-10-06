@@ -48,7 +48,7 @@ export function ModalCancelacionPuntual({ turnoFijoId, diaSemana, abierto, onCer
     <Dialog open={abierto} onOpenChange={(open) => !open && onCerrar()}>
       <DialogContent className="sm:max-w-sm">
         <DialogHeader>
-          <DialogTitle>Cancelación puntual</DialogTitle>
+          <DialogTitle className="font-display font-black uppercase text-[#0F1C2E] text-xl">Cancelación puntual</DialogTitle>
         </DialogHeader>
 
         <p className="text-sm text-muted-foreground">
@@ -74,7 +74,7 @@ export function ModalCancelacionPuntual({ turnoFijoId, diaSemana, abierto, onCer
 
           <DialogFooter>
             <Button type="button" variant="outline" onClick={onCerrar} disabled={cargando}>Cancelar</Button>
-            <Button type="submit" disabled={cargando}>{cargando ? 'Guardando...' : 'Confirmar'}</Button>
+            <Button type="submit" disabled={cargando} className="bg-amber-400 hover:bg-amber-500 text-[#0F1C2E] font-bold border-0">{cargando ? 'Guardando...' : 'Confirmar'}</Button>
           </DialogFooter>
         </form>
       </DialogContent>

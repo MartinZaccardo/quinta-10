@@ -3,13 +3,14 @@
 import { useState } from 'react';
 import Link from 'next/link';
 import useSWR from 'swr';
-import { FaArrowLeft, FaFutbol, FaSignOutAlt } from 'react-icons/fa';
+import { FaFutbol } from 'react-icons/fa';
 import { GiTennisBall } from 'react-icons/gi';
 import { swrFetcher } from '@/lib/api';
 import { type TipoCancha } from '@/lib/canchas';
 import { useAuth } from '@/contexts/auth';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { CalendarioCliente } from '@/components/cliente/calendario-cliente';
+import HeaderCliente from '@/components/cliente/HeaderCliente';
 
 const ETIQUETA_TIPO: Record<TipoCancha, { label: string; icono: React.ReactNode }> = {
   F5:    { label: 'Fútbol 5', icono: <FaFutbol className="w-3.5 h-3.5" /> },
@@ -40,7 +41,7 @@ function fechaInicial(): string {
 }
 
 export default function PaginaDisponibilidad() {
-  const { estaAutenticado, cargando: cargandoAuth, logout } = useAuth();
+  const { estaAutenticado, cargando: cargandoAuth } = useAuth();
   const [fecha, setFecha] = useState<string>(fechaInicial);
   const { data: canchas, isLoading, error } = useSWR<Cancha[]>('/canchas', swrFetcher);
 
@@ -53,40 +54,23 @@ export default function PaginaDisponibilidad() {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      <header className="fixed top-0 left-0 right-0 z-50 bg-[#0F1C2E]/95 backdrop-blur-sm">
-        <div className="max-w-4xl mx-auto px-4 sm:px-8 h-16 flex items-center justify-between">
-          <Link
-            href="/"
-            className="text-white/60 hover:text-white text-sm transition-colors flex items-center gap-1.5 shrink-0"
-          >
-            <FaArrowLeft className="w-3.5 h-3.5" /> Inicio
-          </Link>
-          <span className="font-display font-black uppercase text-white text-lg tracking-wide">
-            La Quinta del 10
-          </span>
-          <div className="flex items-center gap-4 shrink-0">
-            {!cargandoAuth && estaAutenticado && (
-              <>
-                <Link
-                  href="/cliente/mis-reservas"
-                  className="text-white/60 hover:text-white text-sm transition-colors"
-                >
-                  Mis reservas
-                </Link>
-                <button
-                  onClick={() => logout('/')}
-                  className="flex items-center gap-1.5 text-red-400/70 hover:text-red-400 text-sm transition-colors"
-                >
-                  <FaSignOutAlt className="w-3.5 h-3.5" />
-                  Cerrar sesión
-                </button>
-              </>
-            )}
-          </div>
-        </div>
-      </header>
+      {estaAutenticado
+        ? <HeaderCliente />
+        : (
+          <header className="sticky top-0 z-50 bg-[#0F1C2E]">
+            <div className="max-w-4xl mx-auto px-4 sm:px-8 h-14 flex items-center justify-between">
+              <span className="font-display font-black uppercase text-white text-base tracking-wide">
+                La Quinta del 10
+              </span>
+              <Link href="/" className="text-white/60 hover:text-white text-sm transition-colors">
+                Inicio
+              </Link>
+            </div>
+          </header>
+        )
+      }
 
-      <div className="max-w-4xl mx-auto px-4 sm:px-8 pt-24 pb-16">
+      <div className="max-w-4xl mx-auto px-4 sm:px-8 pt-8 pb-16">
         <div className="mb-8">
           <p className="text-sky-400 text-xs font-bold tracking-[0.2em] uppercase mb-2">
             Disponibilidad en tiempo real

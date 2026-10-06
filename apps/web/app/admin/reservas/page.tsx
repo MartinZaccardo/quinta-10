@@ -123,7 +123,7 @@ function ListaReservas({ url, vista, onCambio }: ListaReservasProps) {
                 {vista === 'PENDIENTE' ? 'Rechazar' : 'Cancelar'}
               </Button>
               {vista === 'PENDIENTE' && (
-                <Button size="sm" disabled={ocupado} onClick={() => confirmar(reserva.id)}>
+                <Button size="sm" disabled={ocupado} onClick={() => confirmar(reserva.id)} className="bg-amber-400 hover:bg-amber-500 text-[#0F1C2E] font-bold border-0">
                   Confirmar
                 </Button>
               )}
@@ -199,7 +199,10 @@ export default function PaginaReservas() {
 
   return (
     <div className="p-4 sm:p-6 space-y-4 sm:space-y-6">
-      <h1 className="text-2xl font-semibold">Reservas</h1>
+      <div>
+        <p className="text-sky-400 text-xs font-bold tracking-[0.2em] uppercase mb-1">Gestión de reservas</p>
+        <h1 className="font-display font-black uppercase text-[#0F1C2E] text-4xl sm:text-5xl leading-none">Reservas</h1>
+      </div>
 
       <div className="flex rounded-md border overflow-hidden text-sm w-fit">
         {(['PENDIENTE', 'CONFIRMADA'] as Vista[]).map((v) => (
@@ -208,8 +211,8 @@ export default function PaginaReservas() {
             onClick={() => setVista(v)}
             className={`px-4 py-2 transition-colors ${
               vista === v
-                ? 'bg-primary text-primary-foreground font-medium'
-                : 'text-muted-foreground hover:bg-muted'
+                ? 'bg-amber-400 text-[#0F1C2E] font-medium'
+                : 'text-gray-500 hover:bg-gray-50'
             }`}
           >
             {v === 'PENDIENTE' ? 'Pendientes' : 'Confirmadas'}

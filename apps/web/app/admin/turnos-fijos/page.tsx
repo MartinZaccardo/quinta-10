@@ -6,6 +6,9 @@ import { toast } from 'sonner';
 import { swrFetcher } from '@/lib/api';
 import api from '@/lib/api';
 import { formatearRango, formatearFecha } from '@/lib/tiempo';
+import { type TipoCancha } from '@/lib/canchas';
+import { FaFutbol } from 'react-icons/fa';
+import { GiTennisBall } from 'react-icons/gi';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import { ModalCrearTurnoFijo } from '@/components/admin/modal-crear-turno-fijo';
@@ -20,7 +23,13 @@ const NOMBRE_DIA: Record<DiaSemana, string> = {
   JUEVES: 'Jueves', VIERNES: 'Viernes', SABADO: 'Sábado', DOMINGO: 'Domingo',
 };
 
-interface Cancha { id: string; nombre: string }
+interface Cancha { id: string; nombre: string; tipo: TipoCancha }
+
+const ETIQUETA_TIPO: Record<TipoCancha, { label: string; icono: React.ReactNode }> = {
+  F5:    { label: 'Fútbol 5', icono: <FaFutbol className="w-3.5 h-3.5" /> },
+  F6:    { label: 'Fútbol 6', icono: <FaFutbol className="w-3.5 h-3.5" /> },
+  PADEL: { label: 'Pádel',    icono: <GiTennisBall className="w-3.5 h-3.5" /> },
+};
 
 interface TurnoFijo {
   id: string;
@@ -68,15 +77,21 @@ export default function PaginaTurnosFijos() {
   return (
     <div className="p-4 sm:p-6 space-y-4 sm:space-y-6">
       <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-semibold">Turnos fijos</h1>
-        <Button onClick={() => setModalCrearAbierto(true)}>+ Nuevo turno fijo</Button>
+        <div>
+          <p className="text-sky-400 text-xs font-bold tracking-[0.2em] uppercase mb-1">Clientes recurrentes</p>
+          <h1 className="font-display font-black uppercase text-[#0F1C2E] text-4xl sm:text-5xl leading-none">Turnos fijos</h1>
+        </div>
+        <Button onClick={() => setModalCrearAbierto(true)} className="bg-amber-400 hover:bg-amber-500 text-[#0F1C2E] font-bold border-0 shrink-0">+ Nuevo turno fijo</Button>
       </div>
 
       {canchas?.length ? (
         <Tabs defaultValue={canchas[0].id}>
           <TabsList>
             {canchas.map(c => (
-              <TabsTrigger key={c.id} value={c.id}>{c.nombre}</TabsTrigger>
+              <TabsTrigger key={c.id} value={c.id} className="flex items-center gap-1.5">
+                {ETIQUETA_TIPO[c.tipo]?.icono}
+                {ETIQUETA_TIPO[c.tipo]?.label ?? c.nombre}
+              </TabsTrigger>
             ))}
           </TabsList>
 

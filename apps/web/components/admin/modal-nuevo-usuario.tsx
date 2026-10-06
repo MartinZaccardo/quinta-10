@@ -69,7 +69,7 @@ export function ModalNuevoUsuario({ abierto, onCerrar, onCreado }: Props) {
     <Dialog open={abierto} onOpenChange={(open) => !open && cerrar()}>
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
-          <DialogTitle>Nuevo usuario</DialogTitle>
+          <DialogTitle className="font-display font-black uppercase text-[#0F1C2E] text-xl">Nuevo usuario</DialogTitle>
         </DialogHeader>
 
         <form onSubmit={manejarSubmit} className="space-y-4">
@@ -146,7 +146,7 @@ export function ModalNuevoUsuario({ abierto, onCerrar, onCreado }: Props) {
             <Button type="button" variant="outline" onClick={cerrar} disabled={cargando}>
               Cancelar
             </Button>
-            <Button type="submit" disabled={cargando}>
+            <Button type="submit" disabled={cargando} className="bg-amber-400 hover:bg-amber-500 text-[#0F1C2E] font-bold border-0">
               {cargando ? 'Guardando...' : 'Crear usuario'}
             </Button>
           </DialogFooter>

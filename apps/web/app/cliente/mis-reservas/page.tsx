@@ -55,7 +55,12 @@ export default function PaginaMisReservas() {
 
   return (
     <div className="p-4 sm:p-6 space-y-4 sm:space-y-6">
-      <h1 className="text-2xl font-semibold">Mis reservas</h1>
+      <div className="mb-2">
+        <p className="text-sky-400 text-xs font-bold tracking-[0.2em] uppercase mb-1">Tu historial</p>
+        <h1 className="font-display font-black uppercase text-[#0F1C2E] text-4xl sm:text-5xl leading-none">
+          Mis reservas
+        </h1>
+      </div>
 
       {!reservas?.length ? (
         <div className="py-16 text-center text-muted-foreground text-sm">
