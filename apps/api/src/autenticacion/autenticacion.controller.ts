@@ -1,5 +1,6 @@
 import { Controller, Post, Get, Body, HttpCode, HttpStatus, Res, UseGuards } from '@nestjs/common';
 import { Response, CookieOptions } from 'express';
+import { Throttle } from '@nestjs/throttler';
 import { AutenticacionService } from './autenticacion.service';
 import { RegistroDto } from './dto/registro.dto';
 import { LoginDto } from './dto/login.dto';
@@ -20,6 +21,7 @@ export class AutenticacionController {
   constructor(private readonly autenticacion: AutenticacionService) {}
 
   @Post('registro')
+  @Throttle({ default: { ttl: 600_000, limit: 5 } })
   async registro(
     @Body() dto: RegistroDto,
     @Res({ passthrough: true }) res: Response,
@@ -31,6 +33,7 @@ export class AutenticacionController {
 
   @Post('login')
   @HttpCode(HttpStatus.OK)
+  @Throttle({ default: { ttl: 600_000, limit: 10 } })
   async login(
     @Body() dto: LoginDto,
     @Res({ passthrough: true }) res: Response,
