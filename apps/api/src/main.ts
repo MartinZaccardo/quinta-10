@@ -16,8 +16,9 @@ async function bootstrap() {
     origin: process.env.FRONTEND_URL ?? 'http://localhost:3000',
     credentials: true,
   });
-  await app.listen(process.env.PORT ?? 3001);
-  console.log(`API corriendo en http://localhost:${process.env.PORT ?? 3001}/api`);
+  const puerto = process.env.PORT ?? 3001;
+  await app.listen(puerto);
+  console.log(`API escuchando en el puerto ${puerto}`);
 }
 
 bootstrap();
