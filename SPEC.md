@@ -7,18 +7,18 @@ gestión de turnos fijos y elimina la dependencia del contacto manual por WhatsA
 
 ## Stack tecnológico
 
-| Capa          | Tecnología                            |
-| ------------- | ------------------------------------- |
-| Monorepo      | Turborepo                             |
-| Frontend      | Next.js 14+ (App Router) + TypeScript |
-| Backend       | NestJS + TypeScript                   |
-| Base de datos | PostgreSQL                            |
-| ORM           | Prisma                                |
-| Tiempo real   | WebSockets (Socket.io) o SSE          |
-| Auth          | JWT con NestJS Guards                 |
-| Mensajería    | WhatsApp Business API (Fase 3)        |
-| Pagos         | MercadoPago (Fase 4)                  |
-| Contenedores  | Docker (desarrollo local)             |
+| Capa          | Tecnología                           |
+| ------------- | ------------------------------------ |
+| Monorepo      | Turborepo                            |
+| Frontend      | Next.js 15 (App Router) + TypeScript |
+| Backend       | NestJS + TypeScript                  |
+| Base de datos | PostgreSQL                           |
+| ORM           | Prisma                               |
+| Tiempo real   | WebSockets (Socket.io) o SSE         |
+| Auth          | JWT con NestJS Guards                |
+| Mensajería    | WhatsApp Business API (Fase 3)       |
+| Pagos         | MercadoPago (Fase 4)                 |
+| Contenedores  | Docker (desarrollo local)            |
 
 ---
 
@@ -221,15 +221,17 @@ Domingo        → 08:00 a 23:00
 - CRUD Canchas
 - CRUD Configuración horaria (por día de semana)
 
-### MVP — Backend (en curso)
+### ✅ MVP — Backend (completo)
 
 #### `UsuariosModule`
+
 - Listar usuarios (admin)
 - Obtener usuario por id (admin)
 - Crear usuario desde admin (con o sin email/contraseña, para clientes que no se registran solos)
 - Activar / desactivar usuario
 
 #### `ReservasModule`
+
 - Calcular slots disponibles dinámicamente (por cancha y fecha)
 - Solicitar reserva (cliente)
 - Crear reserva manual (admin — confirma directamente, puede ir fuera del horario base)
@@ -238,24 +240,30 @@ Domingo        → 08:00 a 23:00
 - Listar reservas (admin: todas; cliente: las propias)
 
 #### `TurnosFijosModule`
+
 - Crear turno fijo (admin)
 - Desactivar turno fijo permanentemente
 - Registrar excepción puntual (cancelar un día específico sin desactivar el fijo)
 - Listar turnos fijos activos (admin)
 
-### MVP — Frontend (pendiente, después del backend)
+### ✅ MVP — Frontend (completo)
 
-- Inicializar Next.js + estructura de rutas `(public)`, `(cliente)`, `(admin)`
-- Auth: login y registro
-- Panel admin: vista de disponibilidad por día/cancha, lista de pendientes, reserva manual, turnos fijos
+- Next.js 15 con App Router, estructura de rutas `(public)`, `(cliente)`, `(admin)`
+- Landing page pública del predio
+- Auth: login y registro con validaciones por campo
+- Panel admin: disponibilidad por día/cancha, lista de pendientes, reserva manual, turnos fijos, configuración horaria, gestión de usuarios
 - Vista cliente: ver disponibilidad, solicitar reserva, mis reservas
+
+### ✅ Calidad (completo)
+
+- Tests unitarios (Jest) para lógica de dominio: cálculo de slots, gestión de reservas, utilidades de tiempo
+- CI con GitHub Actions: typecheck + tests en cada push a `main`
 
 ### Post-MVP
 
 - Notificaciones push / email al cambiar estado de una reserva
 - Pago de seña con MercadoPago
 - WhatsApp Business API (mensajes automáticos de confirmación a fijos)
-- Landing page pública del predio
 - Exportación a Google Sheets
 
 ---

@@ -120,6 +120,19 @@ npm run dev
 | Frontend | http://localhost:3000     |
 | API      | http://localhost:3001/api |
 
+## Tests
+
+Los tests unitarios cubren la lógica de dominio del backend (sin necesidad de base de datos):
+
+```bash
+cd apps/api
+npm test           # correr una vez
+npm run test:watch # modo watch durante desarrollo
+npm run test:cov   # con reporte de cobertura
+```
+
+Cobertura actual: utilidades de tiempo (`parsearFechaUTC`, `fechaADiaSemana`, `superposicion`), cálculo dinámico de slots (`generarBloques`), confirmación con cancelación automática de pendientes, validaciones de solicitud y permisos de cancelación.
+
 ## Variables de entorno
 
 ### `apps/api/.env`
