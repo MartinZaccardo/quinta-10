@@ -96,12 +96,12 @@ export default function SeccionUbicacion() {
                 <div>
                   <p className="font-bold text-[#0F1C2E] text-sm">WhatsApp</p>
                   <a
-                    href="https://wa.me/5491171314155"
+                    href={`https://wa.me/${process.env.NEXT_PUBLIC_WHATSAPP_NUMBER}`}
                     target="_blank"
                     rel="noopener noreferrer"
                     className="text-[#C9A21F] hover:underline font-semibold text-sm mt-0.5 inline-block"
                   >
-                    +54 9 11 7131-4155
+                    Escribinos por WhatsApp
                   </a>
                 </div>
               </div>

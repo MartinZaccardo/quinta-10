@@ -63,7 +63,7 @@ export default function SeccionPredio() {
               ))}
             </ul>
             <a
-              href="https://wa.me/5491171314155"
+              href={`https://wa.me/${process.env.NEXT_PUBLIC_WHATSAPP_NUMBER}`}
               target="_blank"
               rel="noopener noreferrer"
               className="inline-flex items-center gap-2 border border-white/20 text-white/70 hover:text-white hover:border-white/40 text-sm px-5 py-2.5 rounded-md transition-colors"

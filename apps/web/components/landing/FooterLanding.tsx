@@ -45,12 +45,12 @@ export default function FooterLanding() {
               <li>Entre Puerto Argentino y Tonelero</li>
               <li>
                 <a
-                  href="https://wa.me/5491171314155"
+                  href={`https://wa.me/${process.env.NEXT_PUBLIC_WHATSAPP_NUMBER}`}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="hover:text-white transition-colors"
                 >
-                  +54 9 11 7131-4155
+                  WhatsApp
                 </a>
               </li>
             </ul>
