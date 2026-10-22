@@ -1,5 +1,7 @@
 # La Quinta del 10 — Sistema de Reservas
 
+![CI](https://github.com/MartinZaccardo/quinta-10/actions/workflows/ci.yml/badge.svg)
+
 Sistema de gestión y reservas para un predio deportivo con canchas de Fútbol 5, Fútbol 6 y Pádel. Reemplaza la coordinación manual por WhatsApp con un sistema web completo.
 
 ## Stack
